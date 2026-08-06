@@ -1,0 +1,127 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && (
+        (request.auth.token != null && request.auth.token.role == 'admin') ||
+        (getUserData() != null && getUserData().role == 'admin')
+      );
+    }
+
+    function isEmployer() {
+      return isAuthenticated() && (
+        (request.auth.token != null && request.auth.token.role == 'employer') ||
+        (getUserData() != null && getUserData().role == 'employer')
+      );
+    }
+
+    // USERS COLLECTION
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // COMPANIES COLLECTION
+    match /companies/{companyId} {
+      allow read: if true; // Public view
+      allow create: if isEmployer() || isAdmin();
+      allow update: if (isEmployer() && resource.data.ownerId == request.auth.uid) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // JOBS COLLECTION
+    match /jobs/{jobId} {
+      allow read: if true; // Public view for published jobs
+      allow create: if isEmployer() || isAdmin();
+      allow update: if (isEmployer() && resource.data.employerId == request.auth.uid) || isAdmin();
+      allow delete: if (isEmployer() && resource.data.employerId == request.auth.uid) || isAdmin();
+    }
+
+    // APPLICATIONS COLLECTION
+    match /applications/{applicationId} {
+      allow read: if isAuthenticated() && (
+        resource.data.candidateId == request.auth.uid ||
+        resource.data.employerId == request.auth.uid ||
+        isAdmin()
+      );
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (
+        resource.data.candidateId == request.auth.uid ||
+        resource.data.employerId == request.auth.uid ||
+        isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+
+    // SAVED JOBS COLLECTION
+    match /saved_jobs/{savedJobId} {
+      allow read, write: if isAuthenticated() && (
+        resource == null || resource.data.userId == request.auth.uid || request.resource.data.userId == request.auth.uid
+      ) || isAdmin();
+    }
+
+    // NOTIFICATIONS COLLECTION
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid || isAdmin()
+      );
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid || isAdmin()
+      );
+      allow delete: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid || isAdmin()
+      );
+    }
+
+    // INTERVIEWS COLLECTION
+    match /interviews/{interviewId} {
+      allow read: if isAuthenticated() && (
+        resource.data.candidateId == request.auth.uid ||
+        resource.data.employerId == request.auth.uid ||
+        isAdmin()
+      );
+      allow create: if isEmployer() || isAdmin();
+      allow update: if isAuthenticated() && (
+        resource.data.candidateId == request.auth.uid ||
+        resource.data.employerId == request.auth.uid ||
+        isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+
+    // ANNOUNCEMENTS COLLECTION
+    match /announcements/{announcementId} {
+      allow read: if true; // Public read
+      allow write: if isAdmin();
+    }
+
+    // AUDIT LOGS COLLECTION
+    match /audit_logs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated();
+      allow update, delete: if false; // Immutable audit trail
+    }
+
+    // Default deny all other paths
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

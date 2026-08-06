@@ -1,0 +1,95 @@
+import { AccentColor, AccentThemeConfig } from '../types/theme';
+
+export const ACCENT_CONFIGS: Record<AccentColor, AccentThemeConfig> = {
+  blue: {
+    id: 'blue',
+    name: 'Primary Blue',
+    primaryHex: '#2563eb',
+    hoverHex: '#1d4ed8',
+    ringClass: 'focus:ring-blue-500/30 border-blue-500',
+    bgLightClass: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
+    badgeClass: 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300',
+    textClass: 'text-blue-600 dark:text-blue-400',
+  },
+  cyan: {
+    id: 'cyan',
+    name: 'Secondary Cyan',
+    primaryHex: '#0891b2',
+    hoverHex: '#0e7490',
+    ringClass: 'focus:ring-cyan-500/30 border-cyan-500',
+    bgLightClass: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400',
+    badgeClass: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-950/60 dark:text-cyan-300',
+    textClass: 'text-cyan-600 dark:text-cyan-400',
+  },
+  emerald: {
+    id: 'emerald',
+    name: 'Emerald Green',
+    primaryHex: '#059669',
+    hoverHex: '#047857',
+    ringClass: 'focus:ring-emerald-500/30 border-emerald-500',
+    bgLightClass: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+    badgeClass: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300',
+    textClass: 'text-emerald-600 dark:text-emerald-400',
+  },
+  violet: {
+    id: 'violet',
+    name: 'Royal Violet',
+    primaryHex: '#7c3aed',
+    hoverHex: '#6d28d9',
+    ringClass: 'focus:ring-violet-500/30 border-violet-500',
+    bgLightClass: 'bg-violet-500/10 text-violet-600 dark:text-violet-400',
+    badgeClass: 'bg-violet-100 text-violet-700 dark:bg-violet-950/60 dark:text-violet-300',
+    textClass: 'text-violet-600 dark:text-violet-400',
+  },
+  amber: {
+    id: 'amber',
+    name: 'Sunset Amber',
+    primaryHex: '#d97706',
+    hoverHex: '#b45309',
+    ringClass: 'focus:ring-amber-500/30 border-amber-500',
+    bgLightClass: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+    badgeClass: 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300',
+    textClass: 'text-amber-600 dark:text-amber-400',
+  },
+  rose: {
+    id: 'rose',
+    name: 'Passion Rose',
+    primaryHex: '#e11d48',
+    hoverHex: '#be123c',
+    ringClass: 'focus:ring-rose-500/30 border-rose-500',
+    bgLightClass: 'bg-rose-500/10 text-rose-600 dark:text-rose-400',
+    badgeClass: 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300',
+    textClass: 'text-rose-600 dark:text-rose-400',
+  },
+  indigo: {
+    id: 'indigo',
+    name: 'Deep Indigo',
+    primaryHex: '#4f46e5',
+    hoverHex: '#4338ca',
+    ringClass: 'focus:ring-indigo-500/30 border-indigo-500',
+    bgLightClass: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400',
+    badgeClass: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300',
+    textClass: 'text-indigo-600 dark:text-indigo-400',
+  },
+};
+
+export const DESIGN_SYSTEM_TOKENS = {
+  appName: 'CareerConnect',
+  tagline: 'Empowering Talent, Connecting Opportunities.',
+  spacing: {
+    containerMax: 'max-w-7xl',
+    paddingX: 'px-4 sm:px-6 lg:px-8',
+    cardPadding: 'p-6',
+  },
+  borderRadius: {
+    sm: 'rounded-md',
+    md: 'rounded-xl',
+    lg: 'rounded-2xl',
+    full: 'rounded-full',
+  },
+  shadows: {
+    soft: 'shadow-sm border border-slate-200/80 dark:border-slate-800/80',
+    medium: 'shadow-md border border-slate-200 dark:border-slate-800',
+    hover: 'transition-shadow hover:shadow-lg',
+  }
+};
