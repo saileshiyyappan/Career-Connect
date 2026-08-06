@@ -91,13 +91,13 @@ export const AppRoutes: React.FC = () => {
         <Route path="/faq" element={<FaqPage />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/terms" element={<TermsPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
       </Route>
 
       {/* Common Authenticated Routes */}
       <Route element={<ProtectedRoute allowedRoles={['job_seeker', 'employer', 'admin']} />}>
         <Route element={<UserLayout />}>
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/settings" element={<SettingsPage />} />
         </Route>
       </Route>
 

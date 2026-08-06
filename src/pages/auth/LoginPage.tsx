@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PageContainer } from '../../components/common/PageContainer';
 import { InputField } from '../../components/inputs/InputField';
 import { PrimaryButton } from '../../components/common/PrimaryButton';
@@ -12,6 +12,7 @@ import { authService } from '../../services/authService';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const { isLoading: authLoading, isAuthenticated, role: userRole } = useAuth();
 
   const [selectedRole, setSelectedRole] = useState<'job_seeker' | 'employer'>('job_seeker');
   const [email, setEmail] = useState('');
@@ -20,6 +21,31 @@ export const LoginPage: React.FC = () => {
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      if (userRole === 'employer') {
+        navigate('/dashboard', { replace: true });
+      } else if (userRole === 'admin') {
+        navigate('/admin', { replace: true });
+      } else {
+        navigate('/jobs', { replace: true });
+      }
+    }
+  }, [authLoading, isAuthenticated, userRole, navigate]);
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900 transition-colors">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-sm font-semibold text-slate-600 dark:text-slate-400 animate-pulse">
+            Verifying session...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
