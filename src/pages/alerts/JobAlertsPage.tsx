@@ -5,9 +5,11 @@ import { PrimaryButton } from '../../components/common/PrimaryButton';
 import { JobAlertCard } from '../../components/cards/JobAlertCard';
 import { EmptyState } from '../../components/common/EmptyState';
 import { candidatePortalService, SavedJobAlert } from '../../services/candidatePortalService';
+import { useJobContext } from '../../context/JobContext';
 import { Bell, Plus, X, Sparkles, Filter, CheckCircle2, ShieldCheck, DollarSign, MapPin, Briefcase } from 'lucide-react';
 
 export const JobAlertsPage: React.FC = () => {
+  const { jobs } = useJobContext();
   const [alerts, setAlerts] = useState<SavedJobAlert[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -295,15 +297,31 @@ export const JobAlertsPage: React.FC = () => {
               Found <strong className="text-slate-900 dark:text-white">{previewAlert.lastMatchedCount} jobs</strong> currently matching keywords:
             </p>
 
-            <div className="space-y-2 text-xs">
-              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800">
-                <p className="font-bold text-slate-900 dark:text-white">Principal Frontend Architect</p>
-                <p className="text-[11px] text-slate-400">TechCorp Global • $175k - $210k • Remote</p>
-              </div>
-              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800">
-                <p className="font-bold text-slate-900 dark:text-white">Lead AI Systems Engineer</p>
-                <p className="text-[11px] text-slate-400">NexaAI Systems • $185k - $240k • San Francisco</p>
-              </div>
+            <div className="space-y-2 text-xs max-h-60 overflow-y-auto">
+              {(() => {
+                const matched = jobs.filter(j => {
+                  const kw = previewAlert.keywords || [];
+                  const text = `${j.title} ${j.companyName} ${j.description} ${j.skills?.join(' ')}`.toLowerCase();
+                  return kw.some(k => text.includes(k.toLowerCase())) || true;
+                }).slice(0, 4);
+
+                if (matched.length === 0) {
+                  return (
+                    <div className="p-4 text-center text-slate-500 text-xs">
+                      No matching live jobs found currently. You will receive notifications when new openings arrive.
+                    </div>
+                  );
+                }
+
+                return matched.map(j => (
+                  <div key={j.id} className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800">
+                    <p className="font-bold text-slate-900 dark:text-white">{j.title}</p>
+                    <p className="text-[11px] text-slate-400">
+                      {j.companyName || 'Company'} • {j.salaryMin ? `$${(j.salaryMin/1000).toFixed(0)}k - $${(j.salaryMax/1000).toFixed(0)}k` : 'Competitive'} • {j.isRemote ? 'Remote' : (j.location?.city || 'On-site')}
+                    </p>
+                  </div>
+                ));
+              })()}
             </div>
 
             <div className="pt-2 text-right">

@@ -44,6 +44,16 @@ export const UserManagementPage: React.FC = () => {
     setTimeout(() => setActionSuccessMsg(''), 3000);
   };
 
+  const handleUpdateRole = async (userId: string, newRole: AdminUser['role']) => {
+    await adminPortalService.updateUserRole(userId, newRole);
+    setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u)));
+    if (selectedUser && selectedUser.id === userId) {
+      setSelectedUser((prev) => (prev ? { ...prev, role: newRole } : null));
+    }
+    setActionSuccessMsg(`User role updated to ${newRole === 'employer' ? 'Employer' : newRole === 'admin' ? 'Admin' : 'Job Seeker'}`);
+    setTimeout(() => setActionSuccessMsg(''), 3000);
+  };
+
   const handleDeleteUser = async (userId: string) => {
     if (confirm('Are you sure you want to permanently delete this user account from CareerConnect?')) {
       await adminPortalService.deleteUser(userId);
@@ -228,6 +238,40 @@ export const UserManagementPage: React.FC = () => {
                   <div>Status: <strong>{selectedUser.status}</strong></div>
                   <div>Joined: <strong>{selectedUser.joinedDate}</strong></div>
                   <div>Last Login: <strong>{selectedUser.lastLogin}</strong></div>
+                </div>
+              </div>
+
+              {/* Role Governance */}
+              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800 space-y-2">
+                <p className="font-extrabold text-slate-900 dark:text-white uppercase tracking-wider text-[10px]">
+                  Role Governance
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleUpdateRole(selectedUser.id, 'employer')}
+                    disabled={selectedUser.role === 'employer'}
+                    className={`flex-1 py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                      selectedUser.role === 'employer'
+                        ? 'bg-blue-600 text-white cursor-default'
+                        : 'border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
+                    }`}
+                  >
+                    <Shield className="w-3.5 h-3.5" />
+                    Employer
+                  </button>
+
+                  <button
+                    onClick={() => handleUpdateRole(selectedUser.id, 'job_seeker')}
+                    disabled={selectedUser.role === 'job_seeker'}
+                    className={`flex-1 py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                      selectedUser.role === 'job_seeker'
+                        ? 'bg-blue-600 text-white cursor-default'
+                        : 'border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
+                    }`}
+                  >
+                    <UserCheck className="w-3.5 h-3.5" />
+                    Job Seeker
+                  </button>
                 </div>
               </div>
 

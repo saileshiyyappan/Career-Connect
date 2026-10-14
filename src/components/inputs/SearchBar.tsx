@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, MapPin, X } from 'lucide-react';
 import { PrimaryButton } from '../common/PrimaryButton';
 import { cn } from '../../utils/cn';
 
 export interface SearchBarProps {
+  initialTitle?: string;
+  initialLocation?: string;
   onSearch?: (title: string, location: string) => void;
   placeholderTitle?: string;
   placeholderLocation?: string;
@@ -11,18 +13,28 @@ export interface SearchBarProps {
 }
 
 export const SearchBar: React.FC<SearchBarProps> = ({
+  initialTitle = '',
+  initialLocation = '',
   onSearch,
   placeholderTitle = 'Job title, keywords, or company...',
   placeholderLocation = 'City, state, or Remote',
   className,
 }) => {
-  const [title, setTitle] = useState('');
-  const [location, setLocation] = useState('');
+  const [title, setTitle] = useState(initialTitle);
+  const [location, setLocation] = useState(initialLocation);
+
+  useEffect(() => {
+    setTitle(initialTitle);
+  }, [initialTitle]);
+
+  useEffect(() => {
+    setLocation(initialLocation);
+  }, [initialLocation]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (onSearch) {
-      onSearch(title, location);
+      onSearch(title.trim(), location.trim());
     }
   };
 

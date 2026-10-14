@@ -7,7 +7,7 @@ import {
   query,
   where,
 } from 'firebase/firestore';
-import { db } from '../config/firestore';
+import { db, isFirebaseConfigured } from '../config/firestore';
 import { FirestoreSavedJobDocument } from '../types';
 
 export interface ISavedJobRepository {
@@ -30,6 +30,8 @@ export class SavedJobRepository implements ISavedJobRepository {
       savedAt: now,
     };
 
+    if (!isFirebaseConfigured) return docData;
+
     try {
       const docRef = doc(db, this.collectionName, id);
       await setDoc(docRef, docData);
@@ -40,6 +42,7 @@ export class SavedJobRepository implements ISavedJobRepository {
   }
 
   async removeSavedJob(userId: string, jobId: string): Promise<void> {
+    if (!isFirebaseConfigured) return;
     const id = `${userId}_${jobId}`;
     try {
       const docRef = doc(db, this.collectionName, id);
@@ -50,6 +53,7 @@ export class SavedJobRepository implements ISavedJobRepository {
   }
 
   async getSavedJobsByUser(userId: string): Promise<FirestoreSavedJobDocument[]> {
+    if (!isFirebaseConfigured) return [];
     try {
       const colRef = collection(db, this.collectionName);
       const q = query(colRef, where('userId', '==', userId));
@@ -62,6 +66,7 @@ export class SavedJobRepository implements ISavedJobRepository {
   }
 
   async getSavedJobIdsByUser(userId: string): Promise<string[]> {
+    if (!isFirebaseConfigured) return [];
     const saved = await this.getSavedJobsByUser(userId);
     return saved.map((s) => s.jobId);
   }

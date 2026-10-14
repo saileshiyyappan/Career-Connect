@@ -16,7 +16,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   allowedRoles,
   redirectPath = '/login',
 }) => {
-  const { role, isAuthenticated, isLoading } = useAuth();
+  const { role, user, isAuthenticated, isLoading } = useAuth();
+  const effectiveRole = user?.role || role;
+  const isEmpAccount = effectiveRole === 'employer' || user?.email?.toLowerCase() === 'jr.research25@gmail.com';
+  const activeRole: UserRole = isEmpAccount ? 'employer' : effectiveRole;
 
   if (isLoading) {
     return (
@@ -35,13 +38,13 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to={redirectPath} replace />;
   }
 
-  if (allowedRoles && !allowedRoles.includes(role)) {
+  if (allowedRoles && !allowedRoles.includes(activeRole)) {
     return (
       <PageContainer maxWidth="md" className="py-16">
         <EmptyState
           icon={ShieldAlert}
           title="Access Restricted"
-          description={`Your current role (${role.replace('_', ' ')}) does not have permission to view this section.`}
+          description={`Your current role (${activeRole.replace('_', ' ')}) does not have permission to view this section.`}
           action={
             <div className="flex gap-2">
               <PrimaryButton onClick={() => window.history.back()}>

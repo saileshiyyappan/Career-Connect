@@ -8,6 +8,8 @@ import { SecondaryButton } from '../../components/common/SecondaryButton';
 import { Badge } from '../../components/common/Badge';
 import { Avatar } from '../../components/common/Avatar';
 import { useJobContext } from '../../context/JobContext';
+import { useAuth } from '../../context/AuthContext';
+import { EmployerProfilePage } from '../employer/EmployerProfilePage';
 import { 
   User, 
   Mail, 
@@ -25,7 +27,15 @@ import {
 } from 'lucide-react';
 
 export const ProfilePage: React.FC = () => {
+  const { role, user } = useAuth();
+  const isEmp = user?.role === 'employer' || role === 'employer' || user?.email?.toLowerCase() === 'jr.research25@gmail.com';
+  const effectiveRole = isEmp ? 'employer' : (user?.role || role);
   const { userProfile, updateProfile } = useJobContext();
+
+  // If authenticated user is an Employer, render the dedicated Employer & Company Profile Suite
+  if (effectiveRole === 'employer') {
+    return <EmployerProfilePage />;
+  }
 
   const [displayName, setDisplayName] = useState(userProfile.displayName || '');
   const [headline, setHeadline] = useState(userProfile.headline || '');
@@ -38,7 +48,7 @@ export const ProfilePage: React.FC = () => {
 
   const [skillInput, setSkillInput] = useState('');
   const [skills, setSkills] = useState<string[]>(userProfile.skills || []);
-  const [resumeName, setResumeName] = useState(userProfile.resumeName || 'Resume.pdf');
+  const [resumeName, setResumeName] = useState(userProfile.resumeName || '');
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -106,12 +116,12 @@ export const ProfilePage: React.FC = () => {
           <div className="flex items-center gap-4">
             <Avatar
               src={userProfile.avatarUrl || userProfile.photoURL}
-              name={displayName || userProfile.displayName || 'Job Candidate'}
+              name={displayName || userProfile.displayName || 'Name unavailable'}
               size="xl"
               className="rounded-2xl"
             />
             <div>
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">{displayName || userProfile.displayName || 'Job Candidate'}</h2>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">{displayName || userProfile.displayName || 'Name unavailable'}</h2>
               <p className="text-xs text-slate-500 font-medium">{userProfile.email}</p>
               <Badge variant="accent" size="sm" className="mt-2">Verified Profile</Badge>
             </div>
@@ -120,6 +130,7 @@ export const ProfilePage: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-100 dark:border-slate-800">
             <InputField
               label="Full Display Name"
+              placeholder="sailesh iyyappan"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               required

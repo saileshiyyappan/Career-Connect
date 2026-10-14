@@ -9,6 +9,7 @@ import { Badge } from '../common/Badge';
 import { Upload, CheckCircle2, FileText, Send, Building, MapPin, DollarSign } from 'lucide-react';
 import { useJobContext } from '../../context/JobContext';
 import { useAuth } from '../../context/AuthContext';
+import { resolveCandidateName } from '../../services/candidateDiscoveryService';
 
 interface ApplyJobModalProps {
   job: Job | null;
@@ -18,24 +19,37 @@ interface ApplyJobModalProps {
 
 export const ApplyJobModal: React.FC<ApplyJobModalProps> = ({ job, isOpen, onClose }) => {
   const { applyToJob, userProfile } = useJobContext();
-  const { role } = useAuth();
+  const { role, user } = useAuth();
+
+  const resolved = resolveCandidateName(user || userProfile);
+  const applicantDisplayName = !resolved.isUnavailable ? resolved.name : (userProfile.displayName || 'Name unavailable');
 
   const [coverLetter, setCoverLetter] = useState('');
-  const [selectedResume, setSelectedResume] = useState(userProfile.resumeName || 'Alex_Morgan_Software_Engineer_Resume_2026.pdf');
+  const [selectedResume, setSelectedResume] = useState(userProfile.resumeName || userProfile.resumeUrl || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   if (!job) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
 
-    setTimeout(() => {
-      applyToJob(job.id, coverLetter, selectedResume);
+    // Guard: External jobs must direct to external portal
+    if (job.jobOrigin === 'external') {
+      if (job.sourceUrl) {
+        window.open(job.sourceUrl, '_blank', 'noopener,noreferrer');
+      }
+      onClose();
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const submitted = await applyToJob(job.id, coverLetter, selectedResume);
+      if (submitted) setIsSubmitted(true);
+    } finally {
       setIsSubmitting(false);
-      setIsSubmitted(true);
-    }, 600);
+    }
   };
 
   const handleModalClose = () => {
@@ -104,11 +118,13 @@ export const ApplyJobModal: React.FC<ApplyJobModalProps> = ({ job, isOpen, onClo
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <InputField
               label="Full Name"
-              value={userProfile.displayName}
+              placeholder="Your Full Name"
+              value={applicantDisplayName}
               disabled
             />
             <InputField
               label="Email Address"
+              placeholder="your.email@example.com"
               value={userProfile.email}
               disabled
             />

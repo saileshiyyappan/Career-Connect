@@ -1,16 +1,25 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { doc, onSnapshot } from 'firebase/firestore';
-import { db } from '../firebase/config/firestore';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { doc, onSnapshot, getDoc } from 'firebase/firestore';
+import { db, isFirebaseConfigured } from '../firebase/config/firestore';
 import { AuthContextType, UserProfile, UserRole } from '../types/user';
 import { firebaseAuthService } from '../firebase/services/AuthService';
 import { userRepository } from '../firebase/repositories/UserRepository';
 import { FirestoreUserDocument } from '../firebase/types';
+import { sanitizeFirestoreData } from '../firebase/utils/sanitize';
+import { resolveCandidateName } from '../utils/userNameUtils';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function normalizeUserRole(rawRole: any): UserRole {
+  if (rawRole === 'employer') return 'employer';
+  if (rawRole === 'admin') return 'admin';
+  if (rawRole === 'job_seeker' || rawRole === 'candidate') return 'job_seeker';
+  return 'job_seeker';
+}
+
 function calculateCompletion(data: Partial<FirestoreUserDocument>): number {
   let filled = 0;
-  const fields = ['displayName', 'email', 'headline', 'location', 'bio', 'avatarUrl', 'skills', 'resumeUrl', 'githubUrl', 'linkedinUrl'];
+  const fields = ['displayName', 'email', 'headline', 'location', 'bio', 'avatarUrl', 'skills', 'resumeUrl', 'githubUrl', 'linkedinUrl', 'education', 'experienceYears'];
   fields.forEach((f) => {
     const val = (data as any)[f];
     if (val && (Array.isArray(val) ? val.length > 0 : String(val).trim() !== '')) {
@@ -20,10 +29,67 @@ function calculateCompletion(data: Partial<FirestoreUserDocument>): number {
   return Math.round((filled / fields.length) * 100);
 }
 
+function buildUserProfileFromDoc(data: FirestoreUserDocument, fbUser: any, resolvedRole: UserRole): UserProfile {
+  const name = resolveCandidateName(data).name;
+  const employerPosition = data.employerPosition || undefined;
+
+  return {
+    uid: fbUser.uid,
+    email: fbUser.email || data.email || '',
+    displayName: name,
+    role: resolvedRole,
+    avatarUrl: data.avatarUrl || data.photoURL || fbUser?.photoURL || undefined,
+    photoURL: data.photoURL || data.avatarUrl || fbUser?.photoURL || undefined,
+    headline: data.headline || undefined,
+    employerPosition,
+    department: data.department || undefined,
+    professionalTitle: data.professionalTitle || (resolvedRole === 'employer' ? (employerPosition || 'Hiring Manager') : undefined),
+    companyLogo: data.companyLogo || undefined,
+    companyDescription: data.companyDescription || undefined,
+    companyLocation: data.companyLocation || undefined,
+    foundedYear: data.foundedYear || undefined,
+    companyAchievements: data.companyAchievements || undefined,
+    aboutCompany: data.aboutCompany || undefined,
+    hiringLocations: data.hiringLocations || [],
+    departments: data.departments || [],
+    commonlyHiredSkills: data.commonlyHiredSkills || [],
+    currentHiringStatus: data.currentHiringStatus || undefined,
+    workModePreference: data.workModePreference || undefined,
+    talentSourcePreferences: data.talentSourcePreferences || [],
+    phone: data.phoneNumber || (data as any).phone || undefined,
+    phoneNumber: data.phoneNumber || (data as any).phone || undefined,
+    location: data.location || undefined,
+    bio: data.bio || undefined,
+    skills: data.skills || [],
+    resumeUrl: data.resumeUrl || undefined,
+    companyName: data.companyName || undefined,
+    companyWebsite: data.companyWebsite || undefined,
+    website: (data as any).website || data.companyWebsite || (data as any).portfolioUrl || undefined,
+    githubUrl: (data as any).githubUrl || (data as any).github || undefined,
+    linkedinUrl: (data as any).linkedinUrl || (data as any).linkedin || undefined,
+    portfolioUrl: (data as any).portfolioUrl || (data as any).website || undefined,
+    resumeName: (data as any).resumeName || undefined,
+    resumeUpdatedAt: (data as any).resumeUpdatedAt || undefined,
+    experienceYears: (data as any).experienceYears || undefined,
+    education: (data as any).education || undefined,
+    experience: (data as any).experience || undefined,
+    createdAt: typeof data.createdAt === 'string' ? data.createdAt : new Date(data.createdAt || Date.now()).toISOString(),
+    updatedAt: typeof data.updatedAt === 'string' ? data.updatedAt : new Date(data.updatedAt || Date.now()).toISOString(),
+    firstName: data.firstName || undefined,
+    lastName: data.lastName || undefined,
+    profileCompleted: data.profileCompleted ?? true,
+    completionPercentage: calculateCompletion(data),
+    verificationStatus: (data as any).verificationStatus || (fbUser?.emailVerified ? 'verified' : 'unverified'),
+    isEmailVerified: fbUser?.emailVerified ?? false,
+  };
+}
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [role, setRole] = useState<UserRole>('guest');
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const creationAttemptedRef = useRef<Set<string>>(new Set());
+  const roleSyncAttemptedRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     let unsubDoc: (() => void) | null = null;
@@ -34,82 +100,94 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         unsubDoc = null;
       }
 
-      if (fbUser) {
-        // Build initial fallback profile immediately so state is synchronously authenticated
-        const savedRole = localStorage.getItem('careerconnect_role') as UserRole | null;
-        const initialRole: UserRole = (savedRole && savedRole !== 'guest') ? savedRole : 'job_seeker';
+      if (!fbUser) {
+        setUser(null);
+        setRole('guest');
+        localStorage.setItem('careerconnect_role', 'guest');
+        setIsLoading(false);
+        return;
+      }
 
-        const initialProfile: UserProfile = {
+      // Mark session as loading while authoritative Firestore document is retrieved
+      setIsLoading(true);
+      // Clean previous user state if switching accounts to prevent role leaks
+      setUser((prev) => (prev?.uid === fbUser.uid ? prev : null));
+
+      if (!isFirebaseConfigured) {
+        const savedRole = localStorage.getItem('careerconnect_role') as UserRole | null;
+        const initialRole: UserRole = normalizeUserRole(savedRole);
+        const name = fbUser.displayName || '';
+        const fallbackProfile: UserProfile = {
           uid: fbUser.uid,
           email: fbUser.email || '',
-          displayName: fbUser.displayName || fbUser.email?.split('@')[0] || 'User',
+          displayName: name || 'Name unavailable',
           role: initialRole,
-          avatarUrl: fbUser.photoURL || undefined,
-          photoURL: fbUser.photoURL || undefined,
           isEmailVerified: fbUser.emailVerified,
           profileCompleted: true,
-          completionPercentage: 80,
+          completionPercentage: calculateCompletion({ displayName: name, email: fbUser.email || '' }),
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };
-
-        setUser(initialProfile);
+        setUser(fallbackProfile);
         setRole(initialRole);
+        setIsLoading(false);
+        return;
+      }
 
-        const userDocRef = doc(db, 'users', fbUser.uid);
-        unsubDoc = onSnapshot(
-          userDocRef,
-          async (snap) => {
-            if (snap.exists()) {
-              const data = snap.data() as FirestoreUserDocument;
-              const userRole: UserRole = (data.role as UserRole) || initialRole;
-              const name = data.displayName || (data.firstName ? `${data.firstName || ''} ${data.lastName || ''}`.trim() : '') || fbUser.displayName || fbUser.email?.split('@')[0] || 'User';
+      const userDocRef = doc(db, 'users', fbUser.uid);
 
-              const profile: UserProfile = {
-                uid: fbUser.uid,
-                email: fbUser.email || data.email || '',
-                displayName: name,
-                role: userRole,
-                avatarUrl: data.avatarUrl || data.photoURL || fbUser.photoURL || undefined,
-                photoURL: data.photoURL || data.avatarUrl || fbUser.photoURL || undefined,
-                headline: data.headline || undefined,
-                phone: data.phoneNumber || (data as any).phone || undefined,
-                phoneNumber: data.phoneNumber || (data as any).phone || undefined,
-                location: data.location || undefined,
-                bio: data.bio || undefined,
-                skills: data.skills || [],
-                resumeUrl: data.resumeUrl || undefined,
-                companyName: data.companyName || undefined,
-                companyWebsite: data.companyWebsite || undefined,
-                website: (data as any).website || data.companyWebsite || (data as any).portfolioUrl || undefined,
-                githubUrl: (data as any).githubUrl || (data as any).github || undefined,
-                linkedinUrl: (data as any).linkedinUrl || (data as any).linkedin || undefined,
-                portfolioUrl: (data as any).portfolioUrl || (data as any).website || undefined,
-                resumeName: (data as any).resumeName || undefined,
-                resumeUpdatedAt: (data as any).resumeUpdatedAt || undefined,
-                experienceYears: (data as any).experienceYears || undefined,
-                education: (data as any).education || undefined,
-                experience: (data as any).experience || undefined,
-                createdAt: typeof data.createdAt === 'string' ? data.createdAt : new Date(data.createdAt || Date.now()).toISOString(),
-                updatedAt: typeof data.updatedAt === 'string' ? data.updatedAt : new Date(data.updatedAt || Date.now()).toISOString(),
-                firstName: data.firstName || undefined,
-                lastName: data.lastName || undefined,
-                profileCompleted: data.profileCompleted ?? true,
-                completionPercentage: calculateCompletion(data),
-                verificationStatus: (data as any).verificationStatus || (fbUser.emailVerified ? 'verified' : 'unverified'),
-                isEmailVerified: fbUser.emailVerified,
-              };
+      unsubDoc = onSnapshot(
+        userDocRef,
+        { includeMetadataChanges: true },
+        async (snap) => {
+          if (snap.exists()) {
+            const data = snap.data() as any;
+            const canonicalRole = normalizeUserRole(data.role);
+            let resolvedRole: UserRole = canonicalRole;
 
-              setUser(profile);
-              setRole(userRole);
-              localStorage.setItem('careerconnect_role', userRole);
-            } else {
-              // Create document for initial user registration
-              const name = fbUser.displayName || fbUser.email?.split('@')[0] || 'User';
+            // jr.research25@gmail.com is an Employer account. Preserve that role.
+            if (fbUser.email?.toLowerCase() === 'jr.research25@gmail.com') {
+              resolvedRole = 'employer';
+              if (data.role !== 'employer' && !roleSyncAttemptedRef.current.has(fbUser.uid)) {
+                roleSyncAttemptedRef.current.add(fbUser.uid);
+                try {
+                  await userRepository.update(fbUser.uid, {
+                    role: 'employer',
+                    ...(data.employerPosition ? { employerPosition: data.employerPosition } : {}),
+                    headline: data.headline || '',
+                  });
+                } catch (e) {
+                  console.warn('Sync employer role to DB notice:', e);
+                }
+              }
+            }
+
+            const profile = buildUserProfileFromDoc(data, fbUser, resolvedRole);
+
+            setUser(profile);
+            setRole(resolvedRole);
+            localStorage.setItem('careerconnect_role', resolvedRole);
+            setIsLoading(false);
+          } else {
+            // Local snapshot may not contain doc immediately when reading from cache.
+            // Do not assume document is missing while snapshot is only from local cache.
+            if ((snap as any).metadata?.fromCache) {
+              return;
+            }
+
+            // Only attempt profile creation once server confirms missing document
+            if (!creationAttemptedRef.current.has(fbUser.uid)) {
+              creationAttemptedRef.current.add(fbUser.uid);
+
+              const cachedRole = localStorage.getItem('careerconnect_role') as UserRole | null;
+              const isEmployerEmail = fbUser.email?.toLowerCase() === 'jr.research25@gmail.com';
+              const registrationRole: UserRole = (isEmployerEmail || cachedRole === 'employer') ? 'employer' : cachedRole === 'admin' ? 'admin' : 'job_seeker';
+              const employerPosition = undefined;
+
+              const name = fbUser.displayName || '';
               const parts = name.trim().split(' ');
               const firstName = parts[0] || '';
               const lastName = parts.slice(1).join(' ') || '';
-              const defaultRole: UserRole = initialRole;
 
               const newDoc: Omit<FirestoreUserDocument, 'createdAt' | 'updatedAt'> = {
                 uid: fbUser.uid,
@@ -117,14 +195,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 displayName: name,
                 firstName,
                 lastName,
-                role: defaultRole,
+                role: registrationRole,
+                ...(employerPosition ? { employerPosition } : {}),
                 emailVerified: fbUser.emailVerified,
                 profileCompleted: false,
                 accountStatus: 'active',
-                photoURL: fbUser.photoURL || undefined,
-                avatarUrl: fbUser.photoURL || undefined,
                 provider: 'password',
-                headline: defaultRole === 'employer' ? 'Hiring Manager' : 'Tech Professional',
+                headline: '',
                 bio: '',
                 location: '',
                 phone: '',
@@ -142,33 +219,53 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 companyWebsite: '',
                 industry: '',
                 companySize: '',
+                ...(fbUser.photoURL ? { photoURL: fbUser.photoURL, avatarUrl: fbUser.photoURL } : {}),
               };
 
-              const newProfile: UserProfile = {
-                ...initialProfile,
-                role: defaultRole,
-                displayName: name,
-              };
+              try {
+                const createdOrExisting = await userRepository.create(newDoc);
+                const finalRole = normalizeUserRole(createdOrExisting.role);
+                const profile = buildUserProfileFromDoc(createdOrExisting, fbUser, finalRole);
 
-              setUser(newProfile);
-              setRole(defaultRole);
-              localStorage.setItem('careerconnect_role', defaultRole);
-
-              await userRepository.create(newDoc);
+                setUser(profile);
+                setRole(finalRole);
+                localStorage.setItem('careerconnect_role', finalRole);
+              } catch (e) {
+                console.warn('AuthContext initial profile creation error:', e);
+                // Attempt direct retrieval if document was created concurrently
+                try {
+                  const existingDoc = await userRepository.findById(fbUser.uid);
+                  if (existingDoc) {
+                    const finalRole = normalizeUserRole(existingDoc.role);
+                    const profile = buildUserProfileFromDoc(existingDoc, fbUser, finalRole);
+                    setUser(profile);
+                    setRole(finalRole);
+                    localStorage.setItem('careerconnect_role', finalRole);
+                  }
+                } catch (fetchErr) {
+                  console.warn('AuthContext fallback document fetch notice:', fetchErr);
+                }
+              }
             }
             setIsLoading(false);
-          },
-          (err) => {
-            console.warn('Firestore user snapshot listener warning:', err);
-            setIsLoading(false);
           }
-        );
-      } else {
-        setUser(null);
-        setRole('guest');
-        localStorage.setItem('careerconnect_role', 'guest');
-        setIsLoading(false);
-      }
+        },
+        (err) => {
+          console.warn('Firestore user snapshot listener warning:', err);
+          userRepository.findById(fbUser.uid).then((existingDoc) => {
+            if (existingDoc) {
+              const finalRole = normalizeUserRole(existingDoc.role);
+              const profile = buildUserProfileFromDoc(existingDoc, fbUser, finalRole);
+              setUser(profile);
+              setRole(finalRole);
+              localStorage.setItem('careerconnect_role', finalRole);
+            }
+            setIsLoading(false);
+          }).catch(() => {
+            setIsLoading(false);
+          });
+        }
+      );
     });
 
     return () => {
@@ -178,7 +275,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const updateUserProfile = async (updates: Partial<UserProfile>) => {
-    if (!user?.uid) return;
+    if (!user?.uid) throw new Error('You must be signed in to update your profile.');
     const normalized: Record<string, any> = { ...updates };
     if (updates.phone !== undefined && updates.phoneNumber === undefined) {
       normalized.phoneNumber = updates.phone;
@@ -198,35 +295,59 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       normalized.lastName = parts.slice(1).join(' ') || '';
     }
 
-    setUser((prev) => (prev ? { ...prev, ...normalized } : null));
+    const previous = user;
+
+    // Protect against Firestore Security Rules permission violations:
+    // Non-admin clients cannot escalate to admin, change uid, accountStatus, verificationStatus, status
+    const payloadToPersist = { ...normalized };
+    if (role !== 'admin') {
+      delete payloadToPersist.uid;
+      delete payloadToPersist.role;
+      delete payloadToPersist.accountStatus;
+      delete payloadToPersist.status;
+      delete payloadToPersist.verificationStatus;
+    }
+
+    const cleanPayload = sanitizeFirestoreData(payloadToPersist);
+
     try {
-      await userRepository.update(user.uid, normalized as any);
+      const persisted = await userRepository.update(user.uid, cleanPayload as any);
+      const persistedRole = normalizeUserRole(persisted.role);
+      setUser(buildUserProfileFromDoc(persisted, firebaseAuthService.getCurrentUser(), persistedRole));
+      setRole(persistedRole);
     } catch (err) {
-      console.warn('Failed to persist user profile updates to Firestore:', err);
+      setUser(previous);
+      throw err;
     }
   };
 
   const loginAs = (newRole: UserRole) => {
-    if (user?.uid) {
-      updateUserProfile({ role: newRole });
-    }
     setRole(newRole);
     localStorage.setItem('careerconnect_role', newRole);
   };
 
-  const updateRole = (newRole: UserRole) => {
+  const updateRole = async (newRole: UserRole) => {
     loginAs(newRole);
+    if (user?.uid && newRole !== 'admin' && newRole !== 'guest') {
+      try {
+        await userRepository.update(user.uid, {
+          role: newRole,
+          ...(newRole === 'employer' && user.employerPosition ? { employerPosition: user.employerPosition } : {}),
+        });
+      } catch (err) {
+        console.warn('Failed to persist user role update to Firestore:', err);
+      }
+    }
   };
 
   const logout = async () => {
-    try {
-      await firebaseAuthService.signOut();
-    } catch (e) {
-      console.warn('Logout warning:', e);
-    }
+    await firebaseAuthService.signOut();
+    creationAttemptedRef.current.clear();
     setUser(null);
     setRole('guest');
+    setIsLoading(false);
     localStorage.setItem('careerconnect_role', 'guest');
+    localStorage.removeItem('careerconnect_user');
   };
 
   return (

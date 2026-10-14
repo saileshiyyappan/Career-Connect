@@ -6,7 +6,7 @@ import {
   doc,
   updateDoc,
 } from 'firebase/firestore';
-import { db } from '../config/firestore';
+import { db, isFirebaseConfigured } from '../config/firestore';
 import {
   FirestoreUserDocument,
   FirestoreCompanyDocument,
@@ -27,6 +27,7 @@ export interface IAdminService {
 
 export class AdminService implements IAdminService {
   async getAllUsers(limitCount: number = 100): Promise<FirestoreUserDocument[]> {
+    if (!isFirebaseConfigured) return [];
     try {
       const colRef = collection(db, 'users');
       const q = query(colRef, limit(limitCount));
@@ -39,6 +40,7 @@ export class AdminService implements IAdminService {
   }
 
   async updateUserRole(userId: string, role: FirestoreUserDocument['role']): Promise<void> {
+    if (!isFirebaseConfigured) return;
     try {
       const docRef = doc(db, 'users', userId);
       await updateDoc(docRef, { role, updatedAt: new Date().toISOString() });
@@ -48,6 +50,7 @@ export class AdminService implements IAdminService {
   }
 
   async setUserStatus(userId: string, status: 'active' | 'suspended' | 'pending'): Promise<void> {
+    if (!isFirebaseConfigured) return;
     try {
       const docRef = doc(db, 'users', userId);
       await updateDoc(docRef, {

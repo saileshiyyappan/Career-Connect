@@ -103,6 +103,15 @@ export const JobCard: React.FC<JobCardProps> = ({
             <DollarSign className="w-3 h-3 mr-1" />
             {formatSalaryRange(job.salary)}
           </Badge>
+          {job.jobOrigin === 'external' ? (
+            <Badge variant="default" size="sm">
+              {job.sourceName ? `Via ${job.sourceName}` : 'Partner Network'}
+            </Badge>
+          ) : (
+            <Badge variant="success" size="sm">
+              Direct Employer
+            </Badge>
+          )}
         </div>
       </div>
 
@@ -112,7 +121,18 @@ export const JobCard: React.FC<JobCardProps> = ({
           {formatDate(job.postedAt)}
         </span>
 
-        {onApply && (
+        {job.jobOrigin === 'external' && job.sourceUrl ? (
+          <a
+            href={job.sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition-colors cursor-pointer shadow-xs"
+          >
+            <span>Apply {job.sourceName ? `on ${job.sourceName}` : 'Externally'}</span>
+            <ArrowUpRight className="w-3.5 h-3.5" />
+          </a>
+        ) : onApply ? (
           <PrimaryButton
             size="sm"
             onClick={(e) => {
@@ -122,7 +142,7 @@ export const JobCard: React.FC<JobCardProps> = ({
           >
             Apply Now
           </PrimaryButton>
-        )}
+        ) : null}
       </div>
     </div>
   );

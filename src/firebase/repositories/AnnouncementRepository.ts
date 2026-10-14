@@ -10,8 +10,9 @@ import {
   where,
   limit,
 } from 'firebase/firestore';
-import { db } from '../config/firestore';
+import { db, isFirebaseConfigured } from '../config/firestore';
 import { FirestoreAnnouncementDocument } from '../types';
+import { sanitizeFirestoreData } from '../utils/sanitize';
 
 export interface IAnnouncementRepository {
   findById(id: string): Promise<FirestoreAnnouncementDocument | null>;
@@ -26,6 +27,7 @@ export class AnnouncementRepository implements IAnnouncementRepository {
   private collectionName = 'announcements';
 
   async findById(id: string): Promise<FirestoreAnnouncementDocument | null> {
+    if (!isFirebaseConfigured) return null;
     try {
       const docRef = doc(db, this.collectionName, id);
       const snap = await getDoc(docRef);
@@ -49,9 +51,12 @@ export class AnnouncementRepository implements IAnnouncementRepository {
       updatedAt: now,
     };
 
+    if (!isFirebaseConfigured) return newAnc;
+
     try {
       const docRef = doc(db, this.collectionName, id);
-      await setDoc(docRef, newAnc);
+      const cleanAnc = sanitizeFirestoreData(newAnc);
+      await setDoc(docRef, cleanAnc);
     } catch (err) {
       console.warn('AnnouncementRepository.create warning:', err);
     }
@@ -59,16 +64,19 @@ export class AnnouncementRepository implements IAnnouncementRepository {
   }
 
   async update(id: string, updates: Partial<FirestoreAnnouncementDocument>): Promise<void> {
+    if (!isFirebaseConfigured) return;
     const now = new Date().toISOString();
     try {
       const docRef = doc(db, this.collectionName, id);
-      await updateDoc(docRef, { ...updates, updatedAt: now });
+      const cleanUpdates = sanitizeFirestoreData({ ...updates, updatedAt: now });
+      await updateDoc(docRef, cleanUpdates);
     } catch (err) {
       console.warn('AnnouncementRepository.update warning:', err);
     }
   }
 
   async delete(id: string): Promise<void> {
+    if (!isFirebaseConfigured) return;
     try {
       const docRef = doc(db, this.collectionName, id);
       await deleteDoc(docRef);
@@ -78,6 +86,7 @@ export class AnnouncementRepository implements IAnnouncementRepository {
   }
 
   async listPublished(_targetRole?: string): Promise<FirestoreAnnouncementDocument[]> {
+    if (!isFirebaseConfigured) return [];
     try {
       const colRef = collection(db, this.collectionName);
       const q = query(colRef, where('published', '==', true), limit(50));
@@ -90,6 +99,7 @@ export class AnnouncementRepository implements IAnnouncementRepository {
   }
 
   async listAll(): Promise<FirestoreAnnouncementDocument[]> {
+    if (!isFirebaseConfigured) return [];
     try {
       const colRef = collection(db, this.collectionName);
       const q = query(colRef, limit(100));

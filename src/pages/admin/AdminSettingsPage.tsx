@@ -45,7 +45,7 @@ export const AdminSettingsPage: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <InputField label="Platform Title Name" value={platformName} onChange={(e) => setPlatformName(e.target.value)} required />
-            <InputField label="System Support Email Address" type="email" value={supportEmail} onChange={(e) => setSupportEmail(e.target.value)} required />
+            <InputField label="System Support Email Address" type="email" placeholder="sailesh@gmail.com" value={supportEmail} onChange={(e) => setSupportEmail(e.target.value)} required />
           </div>
 
           <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800 flex items-center justify-between">

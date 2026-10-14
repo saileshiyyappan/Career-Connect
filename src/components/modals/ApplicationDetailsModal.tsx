@@ -21,6 +21,14 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
 
   if (!isOpen || !application) return null;
 
+  const isApplicantNameUnavailable =
+    !application.applicantName ||
+    application.applicantName.trim().toLowerCase() === 'candidate' ||
+    application.applicantName.trim().toLowerCase() === 'undefined' ||
+    application.applicantName.trim().toLowerCase() === 'null' ||
+    application.applicantName.trim().toLowerCase() === 'name unavailable';
+  const displayApplicantName = isApplicantNameUnavailable ? 'Name unavailable' : application.applicantName.trim();
+
   const handleDownloadSummary = () => {
     // Simulated PDF summary text download
     const content = `CARRIER CONNECT JOB APPLICATION SUMMARY
@@ -30,7 +38,7 @@ Job Title: ${application.jobTitle}
 Company: ${application.companyName}
 Status: ${application.status.toUpperCase()}
 Applied Date: ${application.appliedDate}
-Applicant Name: ${application.applicantName}
+Applicant Name: ${displayApplicantName}
 Applicant Email: ${application.applicantEmail}
 
 Cover Letter:
@@ -104,7 +112,7 @@ Timeline Status History:
           <div className="grid grid-cols-2 gap-3">
             <div className="p-3.5 rounded-xl bg-slate-100/70 dark:bg-slate-800/60 space-y-0.5">
               <span className="text-[10px] font-bold text-slate-400 uppercase">Applicant Profile</span>
-              <p className="font-bold text-slate-900 dark:text-white">{application.applicantName}</p>
+              <p className={`font-bold ${isApplicantNameUnavailable ? 'text-slate-400 dark:text-slate-500 italic' : 'text-slate-900 dark:text-white'}`}>{displayApplicantName}</p>
               <p className="text-slate-500 text-[11px] truncate">{application.applicantEmail}</p>
             </div>
             <div className="p-3.5 rounded-xl bg-slate-100/70 dark:bg-slate-800/60 space-y-0.5">

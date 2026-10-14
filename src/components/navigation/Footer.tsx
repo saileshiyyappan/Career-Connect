@@ -1,12 +1,10 @@
 import React from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { Briefcase, Github, Twitter, Linkedin, Globe } from 'lucide-react';
+import { Github, Twitter, Linkedin, Globe } from 'lucide-react';
 import { FOOTER_LINKS } from '../../constants/navigation';
-import { useTheme } from '../../context/ThemeContext';
+import { CareerConnectLogo } from '../common/CareerConnectLogo';
 
 export const Footer: React.FC = () => {
-  const { accentConfig } = useTheme();
-
   return (
     <footer className="bg-slate-900 text-slate-300 border-t border-slate-800 pt-12 pb-8 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -14,16 +12,8 @@ export const Footer: React.FC = () => {
           
           {/* Brand Info */}
           <div className="lg:col-span-2 space-y-4">
-            <RouterLink to="/" className="flex items-center gap-2.5">
-              <div 
-                className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-black text-lg"
-                style={{ backgroundColor: accentConfig.primaryHex }}
-              >
-                <Briefcase className="w-5 h-5" />
-              </div>
-              <span className="text-xl font-extrabold text-white tracking-tight">
-                Career<span style={{ color: accentConfig.primaryHex }}>Connect</span>
-              </span>
+            <RouterLink to="/" className="inline-flex items-center group">
+              <CareerConnectLogo variant="horizontal" size="md" inverted={true} showTagline={true} />
             </RouterLink>
 
             <p className="text-sm text-slate-400 max-w-sm leading-relaxed">

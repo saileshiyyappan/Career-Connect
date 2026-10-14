@@ -31,11 +31,11 @@ export const EmployerInterviewsPage: React.FC = () => {
   // Form State
   const [candidateId, setCandidateId] = useState('');
   const [jobId, setJobId] = useState('');
-  const [date, setDate] = useState('2026-08-08');
-  const [time, setTime] = useState('15:00 PST');
+  const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [time, setTime] = useState('10:00 AM');
   const [durationMinutes, setDurationMinutes] = useState(45);
   const [type, setType] = useState<ScheduledInterview['type']>('Technical Round');
-  const [panelInput, setPanelInput] = useState('Alex Vance (Lead Architect)');
+  const [panelInput, setPanelInput] = useState('');
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -46,21 +46,26 @@ export const EmployerInterviewsPage: React.FC = () => {
 
   const handleScheduleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const cand = candidates.find(c => c.id === candidateId) || candidates[0];
-    const job = jobs.find(j => j.id === jobId) || jobs[0];
+    const cand = candidates.find(c => c.id === candidateId);
+    const job = jobs.find(j => j.id === jobId);
+
+    if (!cand || !job) {
+      alert('Please select a valid candidate and job opening to schedule.');
+      return;
+    }
 
     setIsSubmitting(true);
     const newInt = await employerPortalService.scheduleInterview({
       candidateId: cand.id,
       candidateName: cand.name,
       candidateEmail: cand.email,
-      jobId: job ? job.id : 'job-1',
-      jobTitle: job ? job.title : 'Senior Developer',
+      jobId: job.id,
+      jobTitle: job.title,
       date,
       time,
       durationMinutes,
       type,
-      panelMembers: [panelInput],
+      panelMembers: panelInput.trim() ? [panelInput.trim()] : ['Hiring Team'],
       notes,
       meetingLink: `https://meet.careerconnect.dev/room/interview-${Date.now()}`
     });

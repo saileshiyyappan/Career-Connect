@@ -12,7 +12,8 @@ import { authService } from '../../services/authService';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const { isLoading: authLoading, isAuthenticated, role: userRole } = useAuth();
+  const { isLoading: authLoading, isAuthenticated, role: userRole, user } = useAuth();
+  const effectiveRole = user?.role || userRole;
 
   const [selectedRole, setSelectedRole] = useState<'job_seeker' | 'employer'>('job_seeker');
   const [email, setEmail] = useState('');
@@ -23,16 +24,17 @@ export const LoginPage: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
-    if (!authLoading && isAuthenticated) {
-      if (userRole === 'employer') {
-        navigate('/dashboard', { replace: true });
-      } else if (userRole === 'admin') {
+    if (!isLoading && !authLoading && isAuthenticated && effectiveRole !== 'guest') {
+      const isEmp = effectiveRole === 'employer' || user?.email?.toLowerCase() === 'jr.research25@gmail.com';
+      if (isEmp) {
+        navigate('/employer/dashboard', { replace: true });
+      } else if (effectiveRole === 'admin') {
         navigate('/admin', { replace: true });
       } else {
         navigate('/jobs', { replace: true });
       }
     }
-  }, [authLoading, isAuthenticated, userRole, navigate]);
+  }, [isLoading, authLoading, isAuthenticated, effectiveRole, user?.email, navigate]);
 
   if (authLoading) {
     return (
@@ -59,18 +61,29 @@ export const LoginPage: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const response = await authService.login({ email, password, rememberMe });
+      const isEmp = selectedRole === 'employer' || email.trim().toLowerCase() === 'jr.research25@gmail.com';
+      const targetRole = isEmp ? 'employer' : selectedRole;
+
+      // Proactively establish role intent
+      localStorage.setItem('careerconnect_role', targetRole);
+
+      const response = await authService.login({
+        email,
+        password,
+        rememberMe,
+        selectedRole: targetRole,
+      });
       setIsLoading(false);
       
       const userRole = response.user.role;
       showSuccessToast(`Welcome back! Signed in as ${userRole === 'employer' ? 'Employer' : userRole === 'admin' ? 'Admin' : 'Candidate'}.`);
       
-      if (userRole === 'employer') {
-        navigate('/dashboard');
+      if (userRole === 'employer' || isEmp) {
+        navigate('/employer/dashboard', { replace: true });
       } else if (userRole === 'admin') {
-        navigate('/admin');
+        navigate('/admin', { replace: true });
       } else {
-        navigate('/jobs');
+        navigate('/jobs', { replace: true });
       }
     } catch (err: any) {
       setIsLoading(false);
@@ -84,7 +97,6 @@ export const LoginPage: React.FC = () => {
       <AuthCard
         title="Sign in to CareerConnect"
         subtitle="Access your job application status, saved roles, or recruiter dashboard."
-        icon={Briefcase}
       >
         
         {/* Role Selector Tabs */}
@@ -93,6 +105,7 @@ export const LoginPage: React.FC = () => {
             type="button"
             onClick={() => {
               setSelectedRole('job_seeker');
+              localStorage.setItem('careerconnect_role', 'job_seeker');
               setErrorMessage('');
             }}
             className={`py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer ${
@@ -109,6 +122,7 @@ export const LoginPage: React.FC = () => {
             type="button"
             onClick={() => {
               setSelectedRole('employer');
+              localStorage.setItem('careerconnect_role', 'employer');
               setErrorMessage('');
             }}
             className={`py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer ${
@@ -130,7 +144,7 @@ export const LoginPage: React.FC = () => {
           <InputField
             label="Email Address"
             type="email"
-            placeholder="you@example.com"
+            placeholder="sailesh@gmail.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required

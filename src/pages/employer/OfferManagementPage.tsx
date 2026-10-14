@@ -22,11 +22,19 @@ export const OfferManagementPage: React.FC = () => {
   // Form State
   const [candidateId, setCandidateId] = useState('');
   const [jobId, setJobId] = useState('');
-  const [baseSalary, setBaseSalary] = useState('165000');
-  const [signingBonus, setSigningBonus] = useState('15000');
-  const [equity, setEquity] = useState('12,000 ISO Stock Units');
-  const [startDate, setStartDate] = useState('2026-09-01');
-  const [expirationDate, setExpirationDate] = useState('2026-08-20');
+  const [baseSalary, setBaseSalary] = useState('');
+  const [signingBonus, setSigningBonus] = useState('');
+  const [equity, setEquity] = useState('');
+  const [startDate, setStartDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 14);
+    return d.toISOString().split('T')[0];
+  });
+  const [expirationDate, setExpirationDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 7);
+    return d.toISOString().split('T')[0];
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -41,19 +49,24 @@ export const OfferManagementPage: React.FC = () => {
 
   const handleCreateOffer = async (e: React.FormEvent) => {
     e.preventDefault();
-    const cand = candidates.find(c => c.id === candidateId) || candidates[0];
-    const job = jobs.find(j => j.id === jobId) || jobs[0];
+    const cand = candidates.find(c => c.id === candidateId);
+    const job = jobs.find(j => j.id === jobId);
+
+    if (!cand || !job) {
+      alert('Please select a valid candidate and job opening.');
+      return;
+    }
 
     setIsSubmitting(true);
     const newOffer = await employerPortalService.createOffer({
       candidateId: cand.id,
       candidateName: cand.name,
       candidateEmail: cand.email,
-      jobId: job ? job.id : 'job-1',
-      jobTitle: job ? job.title : 'Senior Developer',
-      baseSalary: parseInt(baseSalary, 10) || 165000,
-      signingBonus: parseInt(signingBonus, 10) || 15000,
-      equity,
+      jobId: job.id,
+      jobTitle: job.title,
+      baseSalary: parseInt(baseSalary, 10) || 0,
+      signingBonus: parseInt(signingBonus, 10) || 0,
+      equity: equity.trim() || 'N/A',
       startDate,
       expirationDate,
     });

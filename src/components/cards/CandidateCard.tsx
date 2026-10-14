@@ -30,6 +30,14 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
     }
   };
 
+  const isNameUnavailable =
+    !candidate.name ||
+    candidate.name.trim().toLowerCase() === 'candidate' ||
+    candidate.name.trim().toLowerCase() === 'undefined' ||
+    candidate.name.trim().toLowerCase() === 'null' ||
+    candidate.name.trim().toLowerCase() === 'name unavailable';
+  const displayName = isNameUnavailable ? 'Name unavailable' : candidate.name.trim();
+
   return (
     <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4 hover:shadow-md transition-all group">
       
@@ -38,13 +46,13 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
         <div className="flex items-center gap-3">
           <Avatar
             src={candidate.avatar}
-            name={candidate.name}
+            name={displayName}
             size="lg"
             className="rounded-2xl"
           />
           <div>
-            <h4 className="text-sm font-extrabold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-              {candidate.name}
+            <h4 className={`text-sm font-extrabold ${isNameUnavailable ? 'text-slate-400 dark:text-slate-500 italic' : 'text-slate-900 dark:text-white'} group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors`}>
+              {displayName}
             </h4>
             <p className="text-xs text-slate-500 font-medium">{candidate.title}</p>
           </div>
@@ -70,10 +78,12 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
             <MapPin className="w-3.5 h-3.5" />
             {candidate.location}
           </span>
-          <span className="font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-            <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-            {candidate.matchScore}% Match
-          </span>
+          {candidate.matchScore > 0 && (
+            <span className="font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+              <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+              {candidate.matchScore}% Match
+            </span>
+          )}
         </div>
       </div>
 

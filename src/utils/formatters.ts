@@ -32,6 +32,48 @@ export const formatDate = (dateString?: string): string => {
   }).format(date);
 };
 
+export const formatRelativeTime = (dateString?: string): string => {
+  if (!dateString) return 'Recent';
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return dateString;
+
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (diffInSeconds < 0) return 'Just now';
+  if (diffInSeconds < 60) return 'Just now';
+  
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) {
+    return `${diffInMinutes}m ago`;
+  }
+
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) {
+    return diffInHours === 1 ? '1 hour ago' : `${diffInHours} hours ago`;
+  }
+
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays === 1) {
+    return 'Yesterday';
+  }
+  if (diffInDays < 7) {
+    return `${diffInDays} days ago`;
+  }
+
+  const diffInWeeks = Math.floor(diffInDays / 7);
+  if (diffInWeeks < 4) {
+    return diffInWeeks === 1 ? '1 week ago' : `${diffInWeeks} weeks ago`;
+  }
+
+  const diffInMonths = Math.floor(diffInDays / 30);
+  if (diffInMonths < 12) {
+    return diffInMonths === 1 ? '1 month ago' : `${diffInMonths} months ago`;
+  }
+
+  return formatDate(dateString);
+};
+
 export const getStatusBadgeStyle = (status: ApplicationStatus | string): { bg: string; text: string; border: string } => {
   switch (status.toLowerCase()) {
     case 'applied':

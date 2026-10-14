@@ -78,7 +78,7 @@ export const ForgotPasswordPage: React.FC = () => {
             <InputField
               label="Email Address"
               type="email"
-              placeholder="you@example.com"
+              placeholder="sailesh@gmail.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required

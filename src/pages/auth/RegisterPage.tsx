@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { showSuccessToast } from '../../context/ToastContext';
 import { authService } from '../../services/authService';
+import { EMPLOYER_POSITIONS } from '../../types/user';
 
 const REGISTER_STEPS: StepItem[] = [
   { id: 1, label: 'Personal Info' },
@@ -34,11 +35,13 @@ const REGISTER_STEPS: StepItem[] = [
 ];
 
 export const RegisterPage: React.FC = () => {
-  const { isLoading: authLoading, isAuthenticated, role: userRole } = useAuth();
+  const { isLoading: authLoading, isAuthenticated, role: userRole, user } = useAuth();
+  const effectiveRole = user?.role || userRole;
   const navigate = useNavigate();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [role, setRole] = useState<'job_seeker' | 'employer'>('job_seeker');
+  const [employerPosition, setEmployerPosition] = useState<string>('');
   
   // Step 1 Form Data
   const [firstName, setFirstName] = useState('');
@@ -57,15 +60,15 @@ export const RegisterPage: React.FC = () => {
 
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
-      if (userRole === 'employer') {
-        navigate('/dashboard', { replace: true });
-      } else if (userRole === 'admin') {
+      if (effectiveRole === 'employer') {
+        navigate('/employer/dashboard', { replace: true });
+      } else if (effectiveRole === 'admin') {
         navigate('/admin', { replace: true });
       } else {
         navigate('/jobs', { replace: true });
       }
     }
-  }, [authLoading, isAuthenticated, userRole, navigate]);
+  }, [authLoading, isAuthenticated, effectiveRole, navigate]);
 
   if (authLoading) {
     return (
@@ -122,6 +125,7 @@ export const RegisterPage: React.FC = () => {
         email,
         password,
         role,
+        employerPosition: role === 'employer' ? employerPosition : undefined,
         agreedToTerms,
       });
       setIsLoading(false);
@@ -154,7 +158,7 @@ export const RegisterPage: React.FC = () => {
             <div className="grid grid-cols-2 gap-3">
               <InputField
                 label="First Name"
-                placeholder="e.g. Alex"
+                placeholder="sailesh"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 required
@@ -163,7 +167,7 @@ export const RegisterPage: React.FC = () => {
 
               <InputField
                 label="Last Name"
-                placeholder="e.g. Morgan"
+                placeholder="iyyappan"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 required
@@ -173,7 +177,7 @@ export const RegisterPage: React.FC = () => {
             <InputField
               label="Email Address"
               type="email"
-              placeholder="you@example.com"
+              placeholder="sailesh@gmail.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -280,6 +284,29 @@ export const RegisterPage: React.FC = () => {
 
             </div>
 
+            {/* Employer Position Selector (When Employer is selected) */}
+            {role === 'employer' && (
+              <div className="p-4 rounded-2xl bg-purple-50/60 dark:bg-purple-950/20 border border-purple-200/80 dark:border-purple-800/50 space-y-2 animate-fadeIn">
+                <label className="block text-xs font-bold text-purple-900 dark:text-purple-300">
+                  Your Role / Position at Organization
+                </label>
+                <select
+                  value={employerPosition}
+                  onChange={(e) => setEmployerPosition(e.target.value)}
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                  {EMPLOYER_POSITIONS.map((pos) => (
+                    <option key={pos} value={pos}>
+                      {pos}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  This helps tailor your recruiter dashboard, applicant pipeline permissions, and hiring tools.
+                </p>
+              </div>
+            )}
+
             <div className="flex items-center justify-between gap-3 pt-2">
               <SecondaryButton
                 type="button"
@@ -313,6 +340,9 @@ export const RegisterPage: React.FC = () => {
               <p>Name: <strong>{firstName} {lastName}</strong></p>
               <p>Email: <strong>{email}</strong></p>
               <p>Role: <strong className="capitalize">{role === 'job_seeker' ? 'Candidate (Job Seeker)' : 'Employer'}</strong></p>
+              {role === 'employer' && (
+                <p>Position: <strong>{employerPosition}</strong></p>
+              )}
             </div>
 
             <div className="space-y-3 text-xs text-slate-600 dark:text-slate-400">

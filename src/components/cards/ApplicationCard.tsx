@@ -11,6 +11,14 @@ export interface ApplicationCardProps {
 export const ApplicationCard: React.FC<ApplicationCardProps> = ({ application }) => {
   const [showCoverLetter, setShowCoverLetter] = useState(false);
 
+  const isApplicantNameUnavailable =
+    !application.applicantName ||
+    application.applicantName.trim().toLowerCase() === 'candidate' ||
+    application.applicantName.trim().toLowerCase() === 'undefined' ||
+    application.applicantName.trim().toLowerCase() === 'null' ||
+    application.applicantName.trim().toLowerCase() === 'name unavailable';
+  const displayApplicantName = isApplicantNameUnavailable ? 'Name unavailable' : application.applicantName.trim();
+
   return (
     <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all flex flex-col justify-between gap-4">
       <div className="space-y-4">
@@ -48,7 +56,7 @@ export const ApplicationCard: React.FC<ApplicationCardProps> = ({ application })
           <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
             <span className="flex items-center gap-1.5 font-medium">
               <User className="w-3.5 h-3.5 text-slate-400" />
-              Applicant: <strong className="text-slate-900 dark:text-white">{application.applicantName}</strong>
+              Applicant: <strong className={isApplicantNameUnavailable ? 'text-slate-400 dark:text-slate-500 italic' : 'text-slate-900 dark:text-white'}>{displayApplicantName}</strong>
             </span>
           </div>
 

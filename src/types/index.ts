@@ -5,3 +5,5 @@ export * from './company';
 export * from './application';
 export * from './notification';
 export * from './layout';
+export * from './news';
+export * from './campaign';

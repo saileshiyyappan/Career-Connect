@@ -7,8 +7,9 @@ import {
   where,
   limit,
 } from 'firebase/firestore';
-import { db } from '../config/firestore';
+import { db, isFirebaseConfigured } from '../config/firestore';
 import { FirestoreAuditLogDocument } from '../types';
+import { sanitizeFirestoreData } from '../utils/sanitize';
 
 export interface IAuditRepository {
   create(log: Omit<FirestoreAuditLogDocument, 'id' | 'timestamp'>): Promise<FirestoreAuditLogDocument>;
@@ -28,9 +29,12 @@ export class AuditRepository implements IAuditRepository {
       timestamp: now,
     };
 
+    if (!isFirebaseConfigured) return newLog;
+
     try {
       const docRef = doc(db, this.collectionName, id);
-      await setDoc(docRef, newLog);
+      const cleanLog = sanitizeFirestoreData(newLog);
+      await setDoc(docRef, cleanLog);
     } catch (err) {
       console.warn('AuditRepository.create warning:', err);
     }
@@ -38,6 +42,7 @@ export class AuditRepository implements IAuditRepository {
   }
 
   async listLogs(limitCount: number = 100): Promise<FirestoreAuditLogDocument[]> {
+    if (!isFirebaseConfigured) return [];
     try {
       const colRef = collection(db, this.collectionName);
       const q = query(colRef, limit(limitCount));
@@ -50,6 +55,7 @@ export class AuditRepository implements IAuditRepository {
   }
 
   async findByActorId(actorId: string): Promise<FirestoreAuditLogDocument[]> {
+    if (!isFirebaseConfigured) return [];
     try {
       const colRef = collection(db, this.collectionName);
       const q = query(colRef, where('actorId', '==', actorId), limit(50));

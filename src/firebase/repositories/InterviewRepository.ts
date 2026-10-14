@@ -9,8 +9,9 @@ import {
   where,
   limit,
 } from 'firebase/firestore';
-import { db } from '../config/firestore';
+import { db, isFirebaseConfigured } from '../config/firestore';
 import { FirestoreInterviewDocument } from '../types';
+import { sanitizeFirestoreData } from '../utils/sanitize';
 
 export interface IInterviewRepository {
   findById(id: string): Promise<FirestoreInterviewDocument | null>;
@@ -25,6 +26,7 @@ export class InterviewRepository implements IInterviewRepository {
   private collectionName = 'interviews';
 
   async findById(id: string): Promise<FirestoreInterviewDocument | null> {
+    if (!isFirebaseConfigured) return null;
     try {
       const docRef = doc(db, this.collectionName, id);
       const snap = await getDoc(docRef);
@@ -47,25 +49,37 @@ export class InterviewRepository implements IInterviewRepository {
       createdAt: now,
     };
 
+    if (!isFirebaseConfigured) return newInterview;
+
     try {
       const docRef = doc(db, this.collectionName, id);
-      await setDoc(docRef, newInterview);
+      const cleanInterview = sanitizeFirestoreData(newInterview);
+      await setDoc(docRef, cleanInterview);
+      const persisted = await getDoc(docRef);
+      if (!persisted.exists()) throw new Error(`Interview ${id} disappeared after creation`);
+      return { id: persisted.id, ...persisted.data() } as FirestoreInterviewDocument;
     } catch (err) {
       console.warn('InterviewRepository.create warning:', err);
+      throw err;
     }
-    return newInterview;
   }
 
   async update(id: string, updates: Partial<FirestoreInterviewDocument>): Promise<void> {
+    if (!isFirebaseConfigured) return;
     try {
       const docRef = doc(db, this.collectionName, id);
-      await updateDoc(docRef, updates);
+      const cleanUpdates = sanitizeFirestoreData(updates);
+      await updateDoc(docRef, cleanUpdates);
+      const persisted = await getDoc(docRef);
+      if (!persisted.exists()) throw new Error(`Interview ${id} disappeared after update`);
     } catch (err) {
       console.warn('InterviewRepository.update warning:', err);
+      throw err;
     }
   }
 
   async findByCandidateId(candidateId: string): Promise<FirestoreInterviewDocument[]> {
+    if (!isFirebaseConfigured) return [];
     try {
       const colRef = collection(db, this.collectionName);
       const q = query(colRef, where('candidateId', '==', candidateId));
@@ -78,6 +92,7 @@ export class InterviewRepository implements IInterviewRepository {
   }
 
   async findByEmployerId(employerId: string): Promise<FirestoreInterviewDocument[]> {
+    if (!isFirebaseConfigured) return [];
     try {
       const colRef = collection(db, this.collectionName);
       const q = query(colRef, where('employerId', '==', employerId));
@@ -90,6 +105,7 @@ export class InterviewRepository implements IInterviewRepository {
   }
 
   async listAll(limitCount: number = 50): Promise<FirestoreInterviewDocument[]> {
+    if (!isFirebaseConfigured) return [];
     try {
       const colRef = collection(db, this.collectionName);
       const q = query(colRef, limit(limitCount));

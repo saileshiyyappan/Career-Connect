@@ -20,12 +20,19 @@ export const CompanyCard: React.FC<CompanyCardProps> = ({
     <div
       onClick={() => onClick && onClick(company.id)}
       className={cn(
-        'group p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-blue-500/50 transition-all duration-200 cursor-pointer flex flex-col justify-between gap-4',
+        'group rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-blue-500/50 transition-all duration-200 cursor-pointer flex flex-col justify-between overflow-hidden',
         className
       )}
     >
-      <div>
-        <div className="flex items-center gap-3 mb-4">
+      {company.bannerUrl && (
+        <div className="h-16 w-full overflow-hidden bg-slate-100 dark:bg-slate-800 relative">
+          <img src={company.bannerUrl} alt={company.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+        </div>
+      )}
+      <div className={cn("p-6 flex flex-col justify-between h-full", company.bannerUrl ? "pt-4" : "")}>
+        <div>
+          <div className="flex items-center gap-3 mb-4">
           {company.logoUrl ? (
             <img
               src={company.logoUrl}
@@ -66,14 +73,24 @@ export const CompanyCard: React.FC<CompanyCardProps> = ({
       </div>
 
       <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
-        <Badge variant="accent" size="sm">
-          <Briefcase className="w-3 h-3 mr-1" />
-          {company.openJobsCount} Open Jobs
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Badge variant="accent" size="sm">
+            <Briefcase className="w-3 h-3 mr-1" />
+            {company.openJobsCount} {company.openJobsCount === 1 ? 'Open Job' : 'Open Jobs'}
+          </Badge>
+          {company.verified ? (
+            <Badge variant="warning" size="sm">Verified</Badge>
+          ) : company.companyOrigin === 'internal' ? (
+            <Badge variant="info" size="sm">Direct Employer</Badge>
+          ) : (
+            <Badge variant="default" size="sm">{company.sourceName ? `${company.sourceName}` : 'Partner Network'}</Badge>
+          )}
+        </div>
 
         <OutlineButton size="sm">
           View Company
         </OutlineButton>
+      </div>
       </div>
     </div>
   );

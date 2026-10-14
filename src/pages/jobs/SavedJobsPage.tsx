@@ -21,11 +21,14 @@ export const SavedJobsPage: React.FC = () => {
 
   // Filter & Sort
   const filteredJobs = bookmarkedJobs
-    .filter(j =>
-      j.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      j.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      j.location.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    .filter((j) => {
+      const locStr = typeof j.location === 'string' ? j.location : `${j.location?.city || ''} ${j.location?.state || ''}`;
+      return (
+        j.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        j.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        locStr.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    })
     .sort((a, b) => {
       if (sortBy === 'title') return a.title.localeCompare(b.title);
       if (sortBy === 'salary') return (b.salaryMax || 0) - (a.salaryMax || 0);

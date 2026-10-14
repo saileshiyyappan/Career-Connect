@@ -5,20 +5,48 @@ import { Badge } from '../../components/common/Badge';
 import { candidatePortalService, CandidateNotification } from '../../services/candidatePortalService';
 import { Bell, CheckCircle2, Briefcase, Calendar, MessageSquare, ArrowRight, Trash2, CheckCheck, Sparkles, Filter } from 'lucide-react';
 import { Link as RouterLink } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { notificationRepository } from '../../firebase/repositories/NotificationRepository';
 
 export const NotificationsPage: React.FC = () => {
   const [notifications, setNotifications] = useState<CandidateNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [listenerError, setListenerError] = useState<string | null>(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     loadNotifications();
-  }, []);
+    if (!user?.uid) return;
+    return notificationRepository.subscribeByUserId(user.uid, (items) => {
+      setListenerError(null);
+      setNotifications(items.map((n) => ({
+        id: n.id,
+        title: n.title,
+        message: n.message,
+        timestamp: new Date(n.createdAt).toLocaleString(),
+        category: n.type === 'application' ? 'applications' : n.type === 'interview' ? 'interviews' : n.type === 'job_alert' ? 'job_matches' : n.type === 'invitation' || n.type === 'invitation_response' ? 'recruiter_messages' : 'system',
+        read: n.read,
+        targetLink: n.link,
+        actionText: n.type === 'invitation' ? 'Review invitation' : 'View details',
+        rawType: n.type,
+        invitationStatus: n.invitationStatus,
+      })));
+    }, (error) => {
+      console.warn('Notifications listener failed:', error);
+      setListenerError((error as Error & { code?: string }).code === 'permission-denied' ? 'You do not have permission to read these notifications.' : 'Live notifications are temporarily unavailable.');
+    });
+  }, [user?.uid]);
 
   const loadNotifications = async () => {
     setLoading(true);
-    const data = await candidatePortalService.getNotifications();
-    setNotifications(data);
+    try {
+      const data = await candidatePortalService.getNotifications();
+      setNotifications(data);
+    } catch (error) {
+      console.warn('Notifications load failed:', error);
+      setListenerError('Notifications could not be loaded.');
+    }
     setLoading(false);
   };
 
@@ -35,6 +63,13 @@ export const NotificationsPage: React.FC = () => {
   const handleDelete = async (id: string) => {
     await candidatePortalService.deleteNotification(id);
     setNotifications(prev => prev.filter(n => n.id !== id));
+  };
+
+  const handleInvitationResponse = async (id: string, status: 'accepted' | 'declined') => {
+    const ok = await candidatePortalService.respondToInvitation(id, status);
+    if (ok) {
+      setNotifications((prev) => prev.map((n) => n.id === id ? { ...n, invitationStatus: status, read: true } : n));
+    }
   };
 
   const filteredNotifications = categoryFilter === 'all'
@@ -94,6 +129,7 @@ export const NotificationsPage: React.FC = () => {
       </div>
 
       {/* Notifications List */}
+      {listenerError && <div className="p-3 rounded-xl bg-rose-50 text-rose-700 text-xs font-semibold">{listenerError}</div>}
       <div className="space-y-3">
         {filteredNotifications.length === 0 ? (
           <div className="text-center py-12 p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2">
@@ -126,6 +162,12 @@ export const NotificationsPage: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-2 shrink-0 pt-1">
+                {notif.rawType === 'invitation' && notif.invitationStatus === 'pending' && (
+                  <>
+                    <button onClick={() => handleInvitationResponse(notif.id, 'accepted')} className="px-3 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-bold">Accept</button>
+                    <button onClick={() => handleInvitationResponse(notif.id, 'declined')} className="px-3 py-1.5 rounded-xl bg-rose-600 text-white text-xs font-bold">Decline</button>
+                  </>
+                )}
                 {notif.targetLink && (
                   <RouterLink to={notif.targetLink} onClick={() => handleMarkRead(notif.id)}>
                     <button className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1 cursor-pointer">

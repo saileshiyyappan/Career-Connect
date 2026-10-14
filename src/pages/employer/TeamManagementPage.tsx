@@ -93,8 +93,8 @@ export const TeamManagementPage: React.FC = () => {
               </button>
             </div>
 
-            <InputField label="Full Name" value={name} onChange={(e) => setName(e.target.value)} required />
-            <InputField label="Work Email Address" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <InputField label="Full Name" placeholder="sailesh iyyappan" value={name} onChange={(e) => setName(e.target.value)} required />
+            <InputField label="Work Email Address" type="email" placeholder="sailesh@gmail.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
 
             <SelectInput
               label="Assigned Role"

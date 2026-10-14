@@ -5,13 +5,15 @@ import { Badge } from '../../components/common/Badge';
 import { PrimaryButton } from '../../components/common/PrimaryButton';
 import { Target, Users, ShieldCheck, Heart, Sparkles, Globe, Award, Zap, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { Link as RouterLink } from 'react-router-dom';
+import { CareerConnectLogo } from '../../components/common/CareerConnectLogo';
 
 export const AboutPage: React.FC = () => {
   return (
     <PageContainer className="py-10 space-y-16">
       
       {/* Header Banner */}
-      <div className="text-center space-y-4 max-w-3xl mx-auto">
+      <div className="text-center space-y-5 max-w-3xl mx-auto flex flex-col items-center">
+        <CareerConnectLogo variant="mark" size="xl" />
         <Badge variant="accent" size="sm">Our Story & Mission</Badge>
         <h1 className="text-3xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
           Empowering Talent & Connecting World-Class Teams

@@ -9,8 +9,9 @@ import {
   where,
   limit,
 } from 'firebase/firestore';
-import { db } from '../config/firestore';
+import { db, isFirebaseConfigured } from '../config/firestore';
 import { FirestoreCompanyDocument } from '../types';
+import { sanitizeFirestoreData } from '../utils/sanitize';
 
 export interface ICompanyRepository {
   findById(id: string): Promise<FirestoreCompanyDocument | null>;
@@ -25,6 +26,7 @@ export class CompanyRepository implements ICompanyRepository {
   private collectionName = 'companies';
 
   async findById(id: string): Promise<FirestoreCompanyDocument | null> {
+    if (!isFirebaseConfigured) return null;
     try {
       const docRef = doc(db, this.collectionName, id);
       const snap = await getDoc(docRef);
@@ -39,6 +41,7 @@ export class CompanyRepository implements ICompanyRepository {
   }
 
   async findByOwnerId(ownerId: string): Promise<FirestoreCompanyDocument | null> {
+    if (!isFirebaseConfigured) return null;
     try {
       const colRef = collection(db, this.collectionName);
       const q = query(colRef, where('ownerId', '==', ownerId), limit(1));
@@ -64,9 +67,12 @@ export class CompanyRepository implements ICompanyRepository {
       updatedAt: now,
     };
 
+    if (!isFirebaseConfigured) return newCompany;
+
     try {
       const docRef = doc(db, this.collectionName, id);
-      await setDoc(docRef, newCompany);
+      const cleanCompany = sanitizeFirestoreData(newCompany);
+      await setDoc(docRef, cleanCompany);
     } catch (err) {
       console.warn('CompanyRepository.create warning:', err);
     }
@@ -74,16 +80,19 @@ export class CompanyRepository implements ICompanyRepository {
   }
 
   async update(id: string, updates: Partial<FirestoreCompanyDocument>): Promise<void> {
+    if (!isFirebaseConfigured) return;
     const now = new Date().toISOString();
     try {
       const docRef = doc(db, this.collectionName, id);
-      await updateDoc(docRef, { ...updates, updatedAt: now });
+      const cleanUpdates = sanitizeFirestoreData({ ...updates, updatedAt: now });
+      await updateDoc(docRef, cleanUpdates);
     } catch (err) {
       console.warn('CompanyRepository.update warning:', err);
     }
   }
 
   async verifyCompany(id: string, status: FirestoreCompanyDocument['verificationStatus']): Promise<void> {
+    if (!isFirebaseConfigured) return;
     const now = new Date().toISOString();
     try {
       const docRef = doc(db, this.collectionName, id);
@@ -94,6 +103,7 @@ export class CompanyRepository implements ICompanyRepository {
   }
 
   async listAll(limitCount: number = 50): Promise<FirestoreCompanyDocument[]> {
+    if (!isFirebaseConfigured) return [];
     try {
       const colRef = collection(db, this.collectionName);
       const q = query(colRef, limit(limitCount));

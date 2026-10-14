@@ -104,6 +104,31 @@ export const EmployerSettingsPage: React.FC = () => {
           />
         </div>
 
+        {/* Profile Management Shortcuts */}
+        <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
+          <h3 className="text-base font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-2">
+            <Building2 className="w-4 h-4 text-blue-500" />
+            Employer & Organization Profiles
+          </h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Manage your individual professional recruiter credentials, company brand, perks, culture, and hiring strategy.
+          </p>
+          <div className="flex flex-wrap gap-3 pt-2">
+            <a
+              href="/employer/profile"
+              className="px-4 py-2.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 text-xs font-bold hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
+            >
+              Edit Recruiter Credentials →
+            </a>
+            <a
+              href="/employer/company"
+              className="px-4 py-2.5 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800 text-xs font-bold hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-colors"
+            >
+              Edit Company Profile & Media →
+            </a>
+          </div>
+        </div>
+
         <div className="flex justify-end">
           <PrimaryButton type="submit" icon={CheckCircle2}>
             Save Workspace Settings

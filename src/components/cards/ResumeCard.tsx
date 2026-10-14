@@ -157,12 +157,12 @@ Accomplished Senior Software Engineer with expertise in building scalable web ap
             <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 space-y-3 text-xs text-slate-700 dark:text-slate-300 font-mono leading-relaxed">
               <p className="font-bold text-blue-600 dark:text-blue-400">=== CANDIDATE RESUME METADATA ===</p>
               <p>Uploaded: {resume.uploadDate} | File Size: {resume.fileSize}</p>
-              <p>Primary Resume: {resume.isPrimary ? 'YES' : 'NO'}</p>
-              <p className="pt-2 font-bold text-slate-900 dark:text-white">=== INDEXED SKILLS ===</p>
-              <p>{resume.parsedSkills.join(', ')}</p>
-              <p className="pt-2 font-bold text-slate-900 dark:text-white">=== WORK EXPERIENCE OVERVIEW ===</p>
-              <p>• Senior Frontend Engineer @ TechCorp (2023 - Present)</p>
-              <p>• Full Stack Developer @ CloudScale Systems (2021 - 2023)</p>
+              <p>Primary Resume: {resume.isPrimary ? 'YES (Default for Applications)' : 'NO'}</p>
+              <p className="pt-2 font-bold text-slate-900 dark:text-white">=== INDEXED SKILLS ({resume.parsedSkills.length}) ===</p>
+              <p>{resume.parsedSkills.length > 0 ? resume.parsedSkills.join(', ') : 'No specific skills parsed yet.'}</p>
+              <p className="pt-2 font-bold text-slate-900 dark:text-white">=== FILE STATUS ===</p>
+              <p>• Verified document stored in Candidate Vault</p>
+              <p>• Ready for 1-Click job applications on CareerConnect</p>
             </div>
 
             <div className="flex items-center justify-end gap-2 pt-2">

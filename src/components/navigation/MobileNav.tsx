@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link as RouterLink, useLocation } from 'react-router-dom';
+import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, LogOut, User, Shield, UserCheck, Building } from 'lucide-react';
 import { NavItem } from '../../types/layout';
@@ -8,6 +8,8 @@ import { useTheme } from '../../context/ThemeContext';
 import { UserRole } from '../../types/user';
 import { Badge } from '../common/Badge';
 import { PrimaryButton } from '../common/PrimaryButton';
+import { CareerConnectLogo } from '../common/CareerConnectLogo';
+import { showErrorToast } from '../../context/ToastContext';
 
 export interface MobileNavProps {
   isOpen: boolean;
@@ -17,8 +19,27 @@ export interface MobileNavProps {
 
 export const MobileNav: React.FC<MobileNavProps> = ({ isOpen, onClose, navItems }) => {
   const { user, role, isAuthenticated, logout } = useAuth();
+  const isEmp = user?.role === 'employer' || role === 'employer' || user?.email?.toLowerCase() === 'jr.research25@gmail.com';
+  const effectiveRole = isEmp ? 'employer' : (user?.role || role);
   const { accentConfig } = useTheme();
   const location = useLocation();
+  const navigate = useNavigate();
+  const [isLoggingOut, setIsLoggingOut] = React.useState(false);
+
+  const handleLogout = async () => {
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
+    try {
+      await logout();
+      onClose();
+      navigate('/', { replace: true });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Please try again.';
+      showErrorToast(`Sign out failed: ${message}`);
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
 
   const rolesList: { id: UserRole; label: string }[] = [
     { id: 'guest', label: 'Guest' },
@@ -49,9 +70,7 @@ export const MobileNav: React.FC<MobileNavProps> = ({ isOpen, onClose, navItems 
             <div>
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-800">
-                <span className="text-base font-extrabold text-slate-900 dark:text-white">
-                  Career<span style={{ color: accentConfig.primaryHex }}>Connect</span>
-                </span>
+                <CareerConnectLogo variant="horizontal" size="sm" />
                 <button
                   onClick={onClose}
                   className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
@@ -90,7 +109,7 @@ export const MobileNav: React.FC<MobileNavProps> = ({ isOpen, onClose, navItems 
 
             {/* User Section */}
             <div className="p-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
-              {!isAuthenticated || role === 'guest' || !user ? (
+              {!isAuthenticated || effectiveRole === 'guest' || !user ? (
                 <div className="space-y-2">
                   <RouterLink to="/login" onClick={onClose}>
                     <PrimaryButton fullWidth size="md">
@@ -110,14 +129,12 @@ export const MobileNav: React.FC<MobileNavProps> = ({ isOpen, onClose, navItems 
                     </span>
                   </div>
                   <button
-                    onClick={() => {
-                      logout();
-                      onClose();
-                    }}
-                    className="text-xs font-semibold text-rose-500 hover:underline flex items-center gap-1 cursor-pointer"
+                    onClick={handleLogout}
+                    disabled={isLoggingOut}
+                    className="text-xs font-semibold text-rose-500 hover:underline flex items-center gap-1 cursor-pointer disabled:opacity-60"
                   >
                     <LogOut className="w-3.5 h-3.5" />
-                    Exit
+                    {isLoggingOut ? 'Signing Out...' : 'Exit'}
                   </button>
                 </div>
               )}

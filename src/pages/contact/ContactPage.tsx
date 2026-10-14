@@ -120,7 +120,7 @@ export const ContactPage: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <InputField 
                   label="Full Name" 
-                  placeholder="e.g. Alex Morgan" 
+                  placeholder="sailesh iyyappan" 
                   value={formData.name}
                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                   required 
@@ -128,7 +128,7 @@ export const ContactPage: React.FC = () => {
                 <InputField 
                   label="Email Address" 
                   type="email" 
-                  placeholder="alex@example.com" 
+                  placeholder="sailesh@gmail.com" 
                   value={formData.email}
                   onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                   required 

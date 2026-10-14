@@ -1,0 +1,28 @@
+{
+  "name": "careerconnect-functions",
+  "scripts": {
+    "lint": "tsc --noEmit",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log",
+    "test": "node --test dist/test/*.js || node --test --loader ts-node/esm test/**/*.test.ts || node test/runner.mjs"
+  },
+  "engines": {
+    "node": "20"
+  },
+  "main": "dist/src/index.js",
+  "dependencies": {
+    "firebase-admin": "^12.7.0",
+    "firebase-functions": "^6.3.2",
+    "dotenv": "^16.4.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "typescript": "~5.8.2"
+  },
+  "private": true
+}

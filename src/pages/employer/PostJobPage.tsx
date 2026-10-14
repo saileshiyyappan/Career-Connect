@@ -9,6 +9,7 @@ import { PrimaryButton } from '../../components/common/PrimaryButton';
 import { SecondaryButton } from '../../components/common/SecondaryButton';
 import { Badge } from '../../components/common/Badge';
 import { useJobContext } from '../../context/JobContext';
+import { useAuth } from '../../context/AuthContext';
 import { EmploymentType, ExperienceLevel } from '../../types';
 import {
   PlusCircle,
@@ -29,49 +30,44 @@ import {
 export const PostJobPage: React.FC = () => {
   const navigate = useNavigate();
   const { postJob } = useJobContext();
+  const { user } = useAuth();
 
   const [currentStep, setCurrentStep] = useState(1);
 
   // Step 1: Basic Info
   const [title, setTitle] = useState('');
-  const [companyName, setCompanyName] = useState('TechCorp Global');
+  const [companyName, setCompanyName] = useState((user as any)?.companyName || user?.displayName || '');
   const [category, setCategory] = useState('Engineering');
   const [employmentType, setEmploymentType] = useState<EmploymentType>('Full-time');
-  const [experienceLevel, setExperienceLevel] = useState<ExperienceLevel>('Senior Level');
-  const [city, setCity] = useState('San Francisco');
-  const [state, setState] = useState('CA');
-  const [isRemote, setIsRemote] = useState(true);
+  const [experienceLevel, setExperienceLevel] = useState<ExperienceLevel>('Mid Level');
+  const [city, setCity] = useState('');
+  const [state, setState] = useState('');
+  const [isRemote, setIsRemote] = useState(false);
 
   // Step 2: Requirements & Skills
   const [skillInput, setSkillInput] = useState('');
-  const [skills, setSkills] = useState<string[]>(['React', 'TypeScript', 'Tailwind CSS', 'Node.js']);
-  const [qualifications, setQualifications] = useState<string>('B.S. in Computer Science or equivalent software engineering background.');
+  const [skills, setSkills] = useState<string[]>([]);
+  const [qualifications, setQualifications] = useState<string>('');
 
   // Step 3: Responsibilities & Duties
-  const [description, setDescription] = useState('We are seeking a Senior Engineer to architect distributed web interfaces, scale React applications, and partner with product designers.');
-  const [responsibilitiesInput, setResponsibilitiesInput] = useState<string[]>(
-    ['Architect reusable component systems with React 18 & TypeScript.', 'Maintain 99.9% uptime and low latency for client web apps.', 'Participate in peer code reviews and async design proposals.']
-  );
+  const [description, setDescription] = useState('');
+  const [responsibilitiesInput, setResponsibilitiesInput] = useState<string[]>([]);
   const [respInput, setRespInput] = useState('');
 
   // Step 4: Benefits & Perks
-  const [benefits, setBenefits] = useState<string[]>([
-    'Comprehensive Health, Dental & Vision Insurance (100% Covered)',
-    '401(k) Matching up to 6% with immediate vesting',
-    '$3,000 Annual Learning & Conference Stipend',
-    'Remote Work Flexibility & $1,000 Home Office Budget'
-  ]);
+  const [benefits, setBenefits] = useState<string[]>([]);
   const [benefitInput, setBenefitInput] = useState('');
 
   // Step 5: Compensation
-  const [minSalary, setMinSalary] = useState('140000');
-  const [maxSalary, setMaxSalary] = useState('180000');
-  const [signingBonus, setSigningBonus] = useState('15000');
-  const [equity, setEquity] = useState('10,000 Stock Options');
+  const [minSalary, setMinSalary] = useState('');
+  const [maxSalary, setMaxSalary] = useState('');
+  const [signingBonus, setSigningBonus] = useState('');
+  const [equity, setEquity] = useState('');
 
   // Step 6 & 7: Submitting
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [publishedJobId, setPublishedJobId] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const steps = [
     { num: 1, title: 'Basic Info' },
@@ -104,10 +100,11 @@ export const PostJobPage: React.FC = () => {
     }
   };
 
-  const handlePublish = () => {
+  const handlePublish = async () => {
     setIsSubmitting(true);
-    setTimeout(() => {
-      const createdJob = postJob({
+    setSubmitError(null);
+    try {
+      const createdJob = await postJob({
         title: title || 'Senior Software Engineer',
         companyName,
         category,
@@ -130,11 +127,13 @@ export const PostJobPage: React.FC = () => {
         responsibilities: responsibilitiesInput,
         requirements: [qualifications],
       });
-
       setIsSubmitting(false);
       setPublishedJobId(createdJob.id);
       setCurrentStep(7);
-    }, 600);
+    } catch (error: any) {
+      setIsSubmitting(false);
+      setSubmitError(error?.message || 'The job could not be persisted. Please try again.');
+    }
   };
 
   return (
@@ -491,6 +490,12 @@ export const PostJobPage: React.FC = () => {
               </SecondaryButton>
             </div>
           </div>
+        )}
+
+        {submitError && currentStep < 7 && (
+          <p role="alert" className="text-xs font-semibold text-rose-600 dark:text-rose-400">
+            {submitError}
+          </p>
         )}
 
         {/* Wizard Footer Controls */}

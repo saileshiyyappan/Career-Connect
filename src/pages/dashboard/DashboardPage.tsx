@@ -43,7 +43,9 @@ import {
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 
 export const DashboardPage: React.FC = () => {
-  const { role } = useAuth();
+  const { role, user } = useAuth();
+  const isEmp = user?.role === 'employer' || role === 'employer' || user?.email?.toLowerCase() === 'jr.research25@gmail.com';
+  const effectiveRole = isEmp ? 'employer' : (user?.role || role);
   const { jobs, applications, savedJobIds, userProfile, updateApplicationStatus, toggleSaveJob } = useJobContext();
   const navigate = useNavigate();
 
@@ -54,16 +56,35 @@ export const DashboardPage: React.FC = () => {
   const [searchLocation, setSearchLocation] = useState('');
 
   useEffect(() => {
-    if (role === 'job_seeker' || role === 'guest') {
+    if (effectiveRole === 'employer') {
+      navigate('/employer/dashboard', { replace: true });
+      return;
+    }
+    if (effectiveRole === 'admin') {
+      navigate('/admin', { replace: true });
+      return;
+    }
+    if (effectiveRole === 'job_seeker' || effectiveRole === 'guest') {
       candidatePortalService.getInterviews().then(setUpcomingInterviews);
       candidatePortalService.getNotifications().then(setRecentNotifications);
     }
-  }, [role]);
+  }, [effectiveRole, navigate]);
 
   const savedJobs = jobs.filter(j => savedJobIds.includes(j.id));
   const myApplications = applications.filter(a => a.applicantId === userProfile.uid);
   const recommendedJobs = jobs.slice(0, 3);
   const recentlyViewedJobs = jobs.slice(1, 4);
+  const candidateProfileFields: Array<[string, unknown]> = [
+    ['headline', userProfile.headline],
+    ['location', userProfile.location],
+    ['skills', userProfile.skills],
+    ['education', userProfile.education],
+    ['experience', userProfile.experience || userProfile.experienceYears],
+    ['resume', userProfile.resumeUrl],
+  ];
+  const missingProfileFields = candidateProfileFields
+    .filter(([, value]) => !value || (Array.isArray(value) && value.length === 0))
+    .map(([label]) => label);
 
   const handleQuickSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,10 +107,10 @@ export const DashboardPage: React.FC = () => {
                 <span className="text-xs text-blue-200 font-medium">• Verified Profile</span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
-                Welcome back, {userProfile.displayName || 'Candidate'}!
+                Welcome back, {userProfile.displayName?.trim() || user?.displayName?.trim() || 'Job Seeker'}!
               </h1>
               <p className="text-xs sm:text-sm text-blue-100 leading-relaxed font-normal">
-                You have <strong className="text-white">{myApplications.length} active applications</strong>, <strong className="text-white">{upcomingInterviews.length} upcoming interview</strong> scheduled, and <strong className="text-amber-300">12 new job matches</strong> tailored to your React & TypeScript skills.
+                You have <strong className="text-white">{myApplications.length} active applications</strong>, <strong className="text-white">{upcomingInterviews.length} upcoming interviews</strong> scheduled, and <strong className="text-amber-300">{recommendedJobs.length} top job matches</strong> ready for you.
               </p>
             </div>
 
@@ -118,20 +139,25 @@ export const DashboardPage: React.FC = () => {
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-slate-500">Profile Completion</span>
               <span className="text-sm font-black text-blue-600 dark:text-blue-400">
-                {userProfile.completionPercentage ?? 80}%
+                {userProfile.completionPercentage ?? 0}%
               </span>
             </div>
             <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
               <div
                 className="h-full bg-blue-600 rounded-full transition-all duration-300"
-                style={{ width: `${userProfile.completionPercentage ?? 80}%` }}
+                style={{ width: `${userProfile.completionPercentage ?? 0}%` }}
               />
             </div>
             <p className="text-[11px] text-slate-500 font-medium">
-              {(userProfile.completionPercentage ?? 80) < 100
+              {(userProfile.completionPercentage ?? 0) < 100
                 ? 'Complete remaining profile details to stand out to top recruiters.'
                 : 'Your profile is 100% complete and visible to top employers!'}
             </p>
+            {missingProfileFields.length > 0 && (
+              <p className="text-[10px] text-rose-600 dark:text-rose-400 font-semibold">
+                Recommended next: {missingProfileFields.slice(0, 3).join(', ')}
+              </p>
+            )}
             <RouterLink to="/profile" className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
               <span>Complete Profile Wizard</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -155,7 +181,7 @@ export const DashboardPage: React.FC = () => {
                 <Users className="w-4 h-4" />
               </div>
               <p className="text-2xl font-black text-slate-900 dark:text-white">
-                {upcomingInterviews.length || 1}
+                {upcomingInterviews.length}
               </p>
               <p className="text-[11px] text-purple-600 font-bold">Scheduled</p>
             </div>
@@ -332,7 +358,7 @@ export const DashboardPage: React.FC = () => {
             <div className="space-y-3 text-xs">
               <div className="p-3 rounded-2xl bg-purple-50/60 dark:bg-purple-950/30 border border-purple-200/60 dark:border-purple-900/40 space-y-1">
                 <h4 className="font-bold text-slate-900 dark:text-white">Mastering System Architecture</h4>
-                <p className="text-slate-500 text-[11px]">Recommended before TechCorp Technical Round</p>
+                <p className="text-slate-500 text-[11px]">Recommended for Senior Engineering rounds</p>
               </div>
               <div className="p-3 rounded-2xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200/60 dark:border-blue-900/40 space-y-1">
                 <h4 className="font-bold text-slate-900 dark:text-white">AWS Certified Cloud Developer</h4>
@@ -384,145 +410,12 @@ export const DashboardPage: React.FC = () => {
     );
   }
 
-  // Employer View
-  if (role === 'employer') {
-    return (
-      <PageContainer className="py-8 space-y-8">
-        
-        {/* Top Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
-              Recruiter & Employer Control Center
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-              Manage open job postings, candidate submissions, and interview pipelines.
-            </p>
-          </div>
-          <RouterLink to="/post-job">
-            <PrimaryButton icon={Plus}>Post New Job Listing</PrimaryButton>
-          </RouterLink>
-        </div>
-
-        {/* Employer Stats Row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 space-y-1 shadow-xs">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Active Postings</span>
-            <p className="text-2xl font-black text-slate-900 dark:text-white">{jobs.length}</p>
-            <p className="text-[11px] text-slate-400">Published Listings</p>
-          </div>
-
-          <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 space-y-1 shadow-xs">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Total Applicants</span>
-            <p className="text-2xl font-black text-blue-600 dark:text-blue-400">114</p>
-            <p className="text-[11px] text-slate-400">Across all roles</p>
-          </div>
-
-          <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 space-y-1 shadow-xs">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Interviews</span>
-            <p className="text-2xl font-black text-purple-600 dark:text-purple-400">18</p>
-            <p className="text-[11px] text-slate-400">Scheduled this week</p>
-          </div>
-
-          <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 space-y-1 shadow-xs">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Offers Extended</span>
-            <p className="text-2xl font-black text-emerald-500">4</p>
-            <p className="text-[11px] text-emerald-600 font-semibold">Pending candidate acceptance</p>
-          </div>
-        </div>
-
-        {/* Applicant Management Pipeline Table */}
-        <section className="space-y-4">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <Users className="w-5 h-5 text-blue-500" />
-            Recent Candidate Submissions
-          </h2>
-
-          <div className="overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 dark:bg-slate-800/80 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-100 dark:border-slate-800">
-                  <tr>
-                    <th className="py-3.5 px-4">Candidate</th>
-                    <th className="py-3.5 px-4">Applied Position</th>
-                    <th className="py-3.5 px-4">Date Submitted</th>
-                    <th className="py-3.5 px-4">Status</th>
-                    <th className="py-3.5 px-4 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
-                  {applications.map((app) => (
-                    <tr key={app.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
-                      <td className="py-3.5 px-4">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-full bg-blue-500/10 text-blue-600 font-bold flex items-center justify-center shrink-0">
-                            {app.applicantName.charAt(0)}
-                          </div>
-                          <div>
-                            <p className="font-bold text-slate-900 dark:text-white">{app.applicantName}</p>
-                            <p className="text-[11px] text-slate-400">{app.applicantEmail}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-3.5 px-4 font-semibold text-slate-800 dark:text-slate-200">
-                        {app.jobTitle}
-                      </td>
-                      <td className="py-3.5 px-4 text-slate-500">{app.appliedDate}</td>
-                      <td className="py-3.5 px-4">
-                        <select
-                          value={app.status}
-                          onChange={(e) => updateApplicationStatus(app.id, e.target.value as ApplicationStatus)}
-                          className="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none"
-                        >
-                          <option value="applied">Applied</option>
-                          <option value="under_review">Under Review</option>
-                          <option value="interviewing">Interviewing</option>
-                          <option value="offered">Offered</option>
-                          <option value="rejected">Rejected</option>
-                        </select>
-                      </td>
-                      <td className="py-3.5 px-4 text-right">
-                        <button
-                          onClick={() => navigate('/applications')}
-                          className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-colors cursor-pointer"
-                        >
-                          View Details
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-
-      </PageContainer>
-    );
-  }
-
-  // Admin View Fallback
+  // Loading / Redirecting state for other roles
   return (
-    <PageContainer className="py-8 space-y-8">
-      <SectionHeader
-        title="Administrator Portal"
-        subtitle="Platform health, user compliance, and moderation metrics."
-        badge="System Admin"
-      />
-
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
-          <p className="text-xs font-bold text-slate-400 uppercase">Registered Users</p>
-          <p className="text-3xl font-black text-slate-900 dark:text-white mt-1">14,280</p>
-        </div>
-        <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
-          <p className="text-xs font-bold text-slate-400 uppercase">Active Jobs</p>
-          <p className="text-3xl font-black text-blue-600 dark:text-blue-400 mt-1">12,500</p>
-        </div>
-        <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
-          <p className="text-xs font-bold text-slate-400 uppercase">Verified Organizations</p>
-          <p className="text-3xl font-black text-emerald-500 mt-1">2,800</p>
-        </div>
+    <PageContainer className="py-12 flex justify-center items-center">
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin" />
+        <p className="text-xs font-semibold text-slate-500">Loading your workspace...</p>
       </div>
     </PageContainer>
   );

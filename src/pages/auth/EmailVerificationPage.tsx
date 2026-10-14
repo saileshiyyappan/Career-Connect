@@ -59,7 +59,7 @@ export const EmailVerificationPage: React.FC = () => {
               size="lg"
               icon={CheckCircle2}
             >
-              Verify Account (Demo Instant Verify)
+              Confirm Verification
             </PrimaryButton>
 
             <SecondaryButton

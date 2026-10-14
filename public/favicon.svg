@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <radialGradient id="favGlobe" cx="30%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="100%" stop-color="#0284C7"/>
+    </radialGradient>
+    <linearGradient id="favCap" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E293B"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </linearGradient>
+    <linearGradient id="favGold" x1="0%" y1="0%" x2="100%" y2="80%">
+      <stop offset="0%" stop-color="#FDE047"/>
+      <stop offset="60%" stop-color="#EAB308"/>
+      <stop offset="100%" stop-color="#CA8A04"/>
+    </linearGradient>
+    <linearGradient id="favBlue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="40%" stop-color="#0284C7"/>
+      <stop offset="100%" stop-color="#1D4ED8"/>
+    </linearGradient>
+    <linearGradient id="favMagenta" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FB7185"/>
+      <stop offset="40%" stop-color="#F43F5E"/>
+      <stop offset="100%" stop-color="#E11D48"/>
+    </linearGradient>
+    <linearGradient id="favArrow" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#EAB308"/>
+      <stop offset="100%" stop-color="#FEF08A"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Left Globe -->
+  <circle cx="120" cy="260" r="70" fill="url(#favGlobe)" opacity="0.8" />
+  <ellipse cx="120" cy="260" rx="70" ry="25" fill="none" stroke="#BAE6FD" stroke-width="3" opacity="0.6" />
+
+  <!-- Upward Arrow -->
+  <path d="M 330 420 C 400 400, 470 330, 480 200 L 510 215 L 500 130 L 420 150 L 450 165 C 440 270, 380 340, 310 370 Z" fill="url(#favArrow)" />
+
+  <!-- Left Blue C -->
+  <path d="M 230 190 C 170 190, 120 235, 120 300 C 120 365, 170 410, 230 410 C 260 410, 285 395, 300 375 L 265 345 C 255 355, 245 365, 230 365 C 195 365, 168 335, 168 300 C 168 265, 195 235, 230 235 C 245 235, 260 242, 270 252 L 302 222 C 285 202, 260 190, 230 190 Z" fill="url(#favBlue)" />
+  <!-- Candidate inside C -->
+  <circle cx="205" cy="285" r="14" fill="#0F172A" stroke="#FFFFFF" stroke-width="2.5" />
+  <path d="M 185 330 C 185 305, 225 305, 225 330 Z" fill="#0F172A" stroke="#FFFFFF" stroke-width="2.5" />
+
+  <!-- Right Magenta C -->
+  <path d="M 340 190 C 280 190, 230 235, 230 300 C 230 365, 280 410, 340 410 C 370 410, 395 395, 410 375 L 375 345 C 365 355, 355 365, 340 365 C 305 365, 278 335, 278 300 C 278 265, 305 235, 340 235 C 355 235, 370 242, 380 252 L 412 222 C 395 202, 370 190, 340 190 Z" fill="url(#favMagenta)" />
+  <!-- Skyline inside Magenta C -->
+  <rect x="330" y="275" width="8" height="28" rx="1.5" fill="#0284C7" />
+  <rect x="342" y="260" width="9" height="43" rx="1.5" fill="#0369A1" />
+  <rect x="355" y="250" width="10" height="53" rx="1.5" fill="#38BDF8" />
+
+  <!-- Cap Crown -->
+  <ellipse cx="256" cy="125" rx="110" ry="28" fill="#0F172A" />
+  <ellipse cx="256" cy="125" rx="110" ry="12" fill="none" stroke="url(#favGold)" stroke-width="6" />
+  <polygon points="256,25 395,85 256,145 115,85" fill="url(#favCap)" stroke="#334155" stroke-width="3" />
+  <ellipse cx="256" cy="85" rx="9" ry="6" fill="url(#favGold)" />
+  <!-- Tassel -->
+  <path d="M 256 85 C 220 90, 180 120, 170 170" fill="none" stroke="url(#favGold)" stroke-width="4.5" stroke-linecap="round" />
+  <rect x="162" y="170" width="16" height="32" rx="4" fill="url(#favGold)" />
+</svg>

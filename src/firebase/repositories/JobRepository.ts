@@ -10,8 +10,9 @@ import {
   where,
   limit,
 } from 'firebase/firestore';
-import { db } from '../config/firestore';
+import { db, isFirebaseConfigured } from '../config/firestore';
 import { FirestoreJobDocument } from '../types';
+import { sanitizeFirestoreData } from '../utils/sanitize';
 
 export interface IJobRepository {
   findById(id: string): Promise<FirestoreJobDocument | null>;
@@ -27,6 +28,7 @@ export class JobRepository implements IJobRepository {
   private collectionName = 'jobs';
 
   async findById(id: string): Promise<FirestoreJobDocument | null> {
+    if (!isFirebaseConfigured) return null;
     try {
       const docRef = doc(db, this.collectionName, id);
       const snap = await getDoc(docRef);
@@ -50,26 +52,36 @@ export class JobRepository implements IJobRepository {
       updatedAt: now,
     };
 
+    if (!isFirebaseConfigured) return newJob;
+
     try {
       const docRef = doc(db, this.collectionName, id);
-      await setDoc(docRef, newJob);
+      const cleanJob = sanitizeFirestoreData(newJob);
+      await setDoc(docRef, cleanJob);
+      const persisted = await getDoc(docRef);
+      if (!persisted.exists()) throw new Error('Job was not readable after persistence.');
+      return { id: persisted.id, ...persisted.data() } as FirestoreJobDocument;
     } catch (err) {
       console.warn('JobRepository.create warning:', err);
+      throw err;
     }
-    return newJob;
   }
 
   async update(id: string, updates: Partial<FirestoreJobDocument>): Promise<void> {
+    if (!isFirebaseConfigured) return;
     const now = new Date().toISOString();
     try {
       const docRef = doc(db, this.collectionName, id);
-      await updateDoc(docRef, { ...updates, updatedAt: now });
+      const cleanUpdates = sanitizeFirestoreData({ ...updates, updatedAt: now });
+      await updateDoc(docRef, cleanUpdates);
     } catch (err) {
       console.warn('JobRepository.update warning:', err);
+      throw err;
     }
   }
 
   async delete(id: string): Promise<void> {
+    if (!isFirebaseConfigured) return;
     try {
       const docRef = doc(db, this.collectionName, id);
       await deleteDoc(docRef);
@@ -79,12 +91,17 @@ export class JobRepository implements IJobRepository {
   }
 
   async searchJobs(queryText?: string, filters?: Record<string, unknown>): Promise<FirestoreJobDocument[]> {
+    if (!isFirebaseConfigured) return [];
     try {
       const colRef = collection(db, this.collectionName);
-      let q = query(colRef, limit(100));
+      let q = query(colRef, where('status', '==', 'published'), limit(100));
 
       if (filters?.type && filters.type !== 'All') {
-        q = query(colRef, where('type', '==', filters.type), limit(100));
+        try {
+          q = query(colRef, where('status', '==', 'published'), where('type', '==', filters.type), limit(100));
+        } catch {
+          q = query(colRef, where('status', '==', 'published'), limit(100));
+        }
       }
 
       const snap = await getDocs(q);
@@ -114,6 +131,7 @@ export class JobRepository implements IJobRepository {
   }
 
   async findByEmployerId(employerId: string): Promise<FirestoreJobDocument[]> {
+    if (!isFirebaseConfigured) return [];
     try {
       const colRef = collection(db, this.collectionName);
       const q = query(colRef, where('employerId', '==', employerId));
@@ -125,10 +143,13 @@ export class JobRepository implements IJobRepository {
     }
   }
 
-  async listAll(limitCount: number = 100): Promise<FirestoreJobDocument[]> {
+  async listAll(limitCount: number = 100, publishedOnly: boolean = true): Promise<FirestoreJobDocument[]> {
+    if (!isFirebaseConfigured) return [];
     try {
       const colRef = collection(db, this.collectionName);
-      const q = query(colRef, limit(limitCount));
+      const q = publishedOnly
+        ? query(colRef, where('status', '==', 'published'), limit(limitCount))
+        : query(colRef, limit(limitCount));
       const snap = await getDocs(q);
       return snap.docs.map((d) => ({ id: d.id, ...d.data() } as FirestoreJobDocument));
     } catch (err) {

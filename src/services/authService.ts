@@ -8,6 +8,7 @@ export interface RegisterPayload {
   email: string;
   password: string;
   role: UserRole;
+  employerPosition?: string;
   agreedToTerms: boolean;
 }
 
@@ -15,6 +16,7 @@ export interface LoginPayload {
   email: string;
   password: string;
   rememberMe?: boolean;
+  selectedRole?: 'job_seeker' | 'employer';
 }
 
 export interface AuthResponse {
@@ -30,20 +32,75 @@ export const authService = {
    */
   async login(payload: LoginPayload): Promise<AuthResponse> {
     try {
+      // Proactively establish role intent in localStorage before signIn triggers onAuthStateChanged
+      if (payload.selectedRole) {
+        localStorage.setItem('careerconnect_role', payload.selectedRole);
+      }
+
       const fbUser = await firebaseAuthService.signIn(payload.email, payload.password, payload.rememberMe);
       const userDoc = await userRepository.findById(fbUser.uid);
-      
-      const role: UserRole = (userDoc?.role as UserRole) || (payload.email.includes('recruiter') ? 'employer' : 'job_seeker');
+
+      // Determine the resolved role:
+      // When signing in through the Employer tab OR for jr.research25@gmail.com,
+      // completely shift to employer and persist to DB.
+      const isEmployerIntent = payload.selectedRole === 'employer' || payload.email.toLowerCase() === 'jr.research25@gmail.com';
+
+      let role: UserRole;
+      if (isEmployerIntent) {
+        role = 'employer';
+        // Persist the employer role into Firestore DB
+        try {
+          await userRepository.update(fbUser.uid, {
+            role: 'employer',
+            ...(userDoc?.employerPosition ? { employerPosition: userDoc.employerPosition } : {}),
+            headline: userDoc?.headline || '',
+          });
+        } catch (dbErr) {
+          console.warn('DB update to employer notice:', dbErr);
+        }
+      } else if (userDoc?.role) {
+        role = userDoc.role === 'employer' ? 'employer' : userDoc.role === 'admin' ? 'admin' : 'job_seeker';
+      } else {
+        role = 'job_seeker';
+      }
+
+      // Only create Firestore user document if missing (first-time login fallback)
+      if (!userDoc) {
+        try {
+          const created = await userRepository.create({
+            uid: fbUser.uid,
+            email: fbUser.email || payload.email,
+            role,
+            displayName: fbUser.displayName || '',
+            emailVerified: fbUser.emailVerified,
+            profileCompleted: false,
+            accountStatus: 'active',
+            provider: 'password',
+            headline: '',
+          });
+          if (created?.role) {
+            role = created.role === 'employer' ? 'employer' : created.role === 'admin' ? 'admin' : 'job_seeker';
+          }
+        } catch (e) {
+          console.warn('authService login profile creation notice:', e);
+        }
+      }
+
       localStorage.setItem('careerconnect_role', role);
       
+      const employerPosition = userDoc?.employerPosition || undefined;
+
       const user: UserProfile = {
         uid: fbUser.uid,
         email: fbUser.email || payload.email,
-        displayName: userDoc?.displayName || fbUser.displayName || payload.email.split('@')[0],
+        displayName: userDoc?.displayName || fbUser.displayName || 'Name unavailable',
         role,
         avatarUrl: userDoc?.avatarUrl || userDoc?.photoURL || fbUser.photoURL || undefined,
-        headline: userDoc?.headline || (role === 'employer' ? 'Hiring Manager' : 'Tech Professional'),
-        location: userDoc?.location || 'San Francisco, CA',
+        headline: userDoc?.headline || '',
+        employerPosition,
+        companyName: userDoc?.companyName || undefined,
+        companyWebsite: userDoc?.companyWebsite || undefined,
+        location: userDoc?.location || '',
         createdAt: typeof userDoc?.createdAt === 'string' ? userDoc.createdAt : new Date().toISOString(),
       };
 
@@ -66,19 +123,30 @@ export const authService = {
   async register(payload: RegisterPayload): Promise<AuthResponse> {
     const fullName = `${payload.firstName} ${payload.lastName}`.trim();
     const targetRole: 'job_seeker' | 'employer' | 'admin' = payload.role === 'guest' ? 'job_seeker' : payload.role;
+    const employerPosition = payload.employerPosition || undefined;
+
+    // Explicitly cache target role prior to sign up
+    localStorage.setItem('careerconnect_role', targetRole);
+
     const fbUser = await firebaseAuthService.signUp(
       payload.email,
       payload.password,
       targetRole,
       fullName,
-      { firstName: payload.firstName, lastName: payload.lastName }
+      {
+        firstName: payload.firstName,
+        lastName: payload.lastName,
+        employerPosition,
+      }
     );
 
     const user: UserProfile = {
       uid: fbUser.uid,
       email: fbUser.email || payload.email,
       displayName: fullName,
-      role: payload.role,
+      role: targetRole,
+      employerPosition,
+      headline: '',
       createdAt: new Date().toISOString(),
     };
 
@@ -138,11 +206,7 @@ export const authService = {
    * Sign out user
    */
   async logout(): Promise<void> {
-    try {
-      await firebaseAuthService.signOut();
-    } catch (err) {
-      console.warn('Firebase logout warning:', err);
-    }
+    await firebaseAuthService.signOut();
   },
 };
 

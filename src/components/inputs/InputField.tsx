@@ -28,6 +28,20 @@ export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
   ) => {
     const inputId = id || (label ? `input-${label.toLowerCase().replace(/\s+/g, '-')}` : undefined);
 
+    let resolvedPlaceholder = props.placeholder;
+    if (resolvedPlaceholder === undefined && label) {
+      const lower = label.toLowerCase();
+      if (lower.includes('first name') || lower.includes('1st name')) {
+        resolvedPlaceholder = 'sailesh';
+      } else if (lower.includes('last name')) {
+        resolvedPlaceholder = 'iyyappan';
+      } else if (lower.includes('email')) {
+        resolvedPlaceholder = 'sailesh@gmail.com';
+      } else if (lower.includes('full name') || lower.includes('display name') || lower === 'name') {
+        resolvedPlaceholder = 'sailesh iyyappan';
+      }
+    }
+
     return (
       <div className={cn('flex flex-col gap-1.5', fullWidth ? 'w-full' : '')}>
         {label && (
@@ -57,6 +71,7 @@ export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
               error ? 'border-rose-500 focus:ring-rose-500/30 focus:border-rose-500' : '',
               className
             )}
+            placeholder={resolvedPlaceholder}
             {...props}
           />
 

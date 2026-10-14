@@ -6,10 +6,14 @@ import { SecondaryButton } from '../../components/common/SecondaryButton';
 import { Badge } from '../../components/common/Badge';
 import { JobCard } from '../../components/cards/JobCard';
 import { CompanyCard } from '../../components/cards/CompanyCard';
+import { NewsCard } from '../../components/cards/NewsCard';
+import { NewsCardSkeleton } from '../../components/common/LoadingSkeleton';
 import { ApplyJobModal } from '../../components/modals/ApplyJobModal';
 import { useJobContext } from '../../context/JobContext';
 import { useTheme } from '../../context/ThemeContext';
 import { Job } from '../../types';
+import { CareerNewsItem } from '../../types/news';
+import { careerNewsService } from '../../services/careerNewsService';
 import { 
   Search, 
   MapPin, 
@@ -33,11 +37,15 @@ import {
   Star,
   Quote,
   Clock,
-  Send
+  Send,
+  Newspaper
 } from 'lucide-react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { EmployerDashboardPage } from '../employer/EmployerDashboardPage';
+import { PublicLandingPage } from './PublicLandingPage';
 
-export const HomePage: React.FC = () => {
+const AuthenticatedHomePage: React.FC = () => {
   const { jobs, companies, searchFilter, setSearchFilter, toggleSaveJob, savedJobIds } = useJobContext();
   const { accentConfig } = useTheme();
   const navigate = useNavigate();
@@ -45,6 +53,29 @@ export const HomePage: React.FC = () => {
   const [queryInput, setQueryInput] = useState('');
   const [locationInput, setLocationInput] = useState('');
   const [selectedJobToApply, setSelectedJobToApply] = useState<Job | null>(null);
+
+  // Top career news for homepage
+  const [homeNews, setHomeNews] = useState<CareerNewsItem[]>([]);
+  const [newsLoading, setNewsLoading] = useState<boolean>(true);
+
+  React.useEffect(() => {
+    let isMounted = true;
+    careerNewsService.getTopNews(3)
+      .then((items) => {
+        if (isMounted) {
+          setHomeNews(items);
+          setNewsLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.warn('Notice fetching homepage news:', err);
+        if (isMounted) setNewsLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleHeroSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -334,6 +365,49 @@ export const HomePage: React.FC = () => {
           </div>
         </section>
 
+        {/* Latest Career News & Market Insights */}
+        <section className="space-y-8">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <SectionHeader
+              title="Career & Tech Industry News"
+              subtitle="Stay ahead with real-time hiring trends, tech market shifts, and career guidance."
+              badge="Live Intelligence"
+            />
+            <RouterLink to="/news">
+              <SecondaryButton icon={ArrowRight} iconPosition="right" size="sm">
+                View All Career News
+              </SecondaryButton>
+            </RouterLink>
+          </div>
+
+          {newsLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <NewsCardSkeleton />
+              <NewsCardSkeleton />
+              <NewsCardSkeleton />
+            </div>
+          ) : homeNews.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {homeNews.map((article) => (
+                <NewsCard
+                  key={article.id}
+                  article={article}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="p-8 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-center space-y-3">
+              <Newspaper className="w-8 h-8 mx-auto text-slate-400" />
+              <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                Aggregating the latest career headlines...
+              </p>
+              <RouterLink to="/news" className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline inline-block">
+                Visit Career News Center →
+              </RouterLink>
+            </div>
+          )}
+        </section>
+
         {/* Why Choose CareerConnect */}
         <section className="space-y-8">
           <SectionHeader
@@ -454,4 +528,28 @@ export const HomePage: React.FC = () => {
       />
     </div>
   );
+};
+
+export const HomePage: React.FC = () => {
+  const { user, role, isLoading } = useAuth();
+  const effectiveRole = user?.role || role;
+  const isEmployer = effectiveRole === 'employer' || user?.email?.toLowerCase() === 'jr.research25@gmail.com';
+
+  if (isLoading) {
+    return (
+      <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+        <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">Restoring session...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <PublicLandingPage />;
+  }
+
+  if (isEmployer) {
+    return <EmployerDashboardPage />;
+  }
+
+  return <AuthenticatedHomePage />;
 };

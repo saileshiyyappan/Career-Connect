@@ -73,6 +73,9 @@ export const AdminDashboardPage: React.FC = () => {
 
   const pendingVerificationEmployers = employers.filter((e) => e.status === 'Pending');
   const pendingReports = reports.filter((r) => r.status === 'Pending');
+  const placementRate = stats.applicationsSubmitted > 0
+    ? `${((stats.successfulHires / stats.applicationsSubmitted) * 100).toFixed(1)}%`
+    : '0.0%';
 
   return (
     <PageContainer className="py-8 space-y-8">
@@ -106,7 +109,7 @@ export const AdminDashboardPage: React.FC = () => {
           subtitle={`${stats.activeJobSeekers.toLocaleString()} Seekers • ${stats.employers.toLocaleString()} Employers`}
           icon={Users}
           trend={stats.userGrowthRate}
-          trendType="positive"
+          trendType="neutral"
           color="purple"
         />
         <AdminStatCard
@@ -115,7 +118,7 @@ export const AdminDashboardPage: React.FC = () => {
           subtitle={`Out of ${stats.jobsPosted.toLocaleString()} total posted`}
           icon={Briefcase}
           trend={stats.jobGrowthRate}
-          trendType="positive"
+          trendType="neutral"
           color="blue"
         />
         <AdminStatCard
@@ -123,8 +126,8 @@ export const AdminDashboardPage: React.FC = () => {
           value={stats.verifiedCompanies}
           subtitle={`${pendingVerificationEmployers.length} Pending Review`}
           icon={Building}
-          trend="+12 this week"
-          trendType="positive"
+          trend={`${pendingVerificationEmployers.length} pending review`}
+          trendType="neutral"
           color="emerald"
         />
         <AdminStatCard
@@ -132,8 +135,8 @@ export const AdminDashboardPage: React.FC = () => {
           value={stats.applicationsSubmitted}
           subtitle={`${stats.successfulHires.toLocaleString()} Hires Confirmed`}
           icon={Award}
-          trend="+2,480 this month"
-          trendType="positive"
+          trend={`${stats.successfulHires} confirmed hires`}
+          trendType="neutral"
           color="indigo"
         />
       </div>
@@ -169,7 +172,7 @@ export const AdminDashboardPage: React.FC = () => {
             Placement Rate
           </span>
           <span className="text-xl font-black text-emerald-600 dark:text-emerald-400 mt-1 block">
-            75.1%
+            {placementRate}
           </span>
         </div>
       </div>

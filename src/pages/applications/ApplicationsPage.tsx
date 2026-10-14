@@ -11,13 +11,16 @@ import { FileText, Filter, CheckCircle2, Clock, Send, Search, Eye } from 'lucide
 
 export const ApplicationsPage: React.FC = () => {
   const { applications, userProfile, updateApplicationStatus } = useJobContext();
-  const { role } = useAuth();
+  const { role, user } = useAuth();
+  const isEmp = user?.role === 'employer' || role === 'employer' || user?.email?.toLowerCase() === 'jr.research25@gmail.com';
+  const effectiveRole = isEmp ? 'employer' : (user?.role || role);
   const [statusFilter, setStatusFilter] = useState<string>('All');
   const [selectedAppForDetails, setSelectedAppForDetails] = useState<JobApplication | null>(null);
 
-  const myApplications = role === 'employer' 
+  const currentUid = user?.uid || userProfile?.uid;
+  const myApplications = effectiveRole === 'employer' 
     ? applications 
-    : applications.filter(a => a.applicantId === userProfile.uid);
+    : applications.filter(a => a.applicantId === currentUid || (currentUid && a.applicantId === currentUid));
 
   const filteredApps = statusFilter === 'All'
     ? myApplications

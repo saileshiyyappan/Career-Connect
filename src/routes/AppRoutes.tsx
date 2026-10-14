@@ -18,6 +18,7 @@ import { UnauthorizedPage } from '../pages/auth/UnauthorizedPage';
 import { OnboardingWizardPage } from '../pages/onboarding/OnboardingWizardPage';
 import { JobsPage } from '../pages/jobs/JobsPage';
 import { JobDetailsPage } from '../pages/job-details/JobDetailsPage';
+import { NewsPage } from '../pages/news/NewsPage';
 import { DashboardPage } from '../pages/dashboard/DashboardPage';
 import { ProfilePage } from '../pages/profile/ProfilePage';
 
@@ -26,7 +27,6 @@ import { EmployerDashboardPage } from '../pages/employer/EmployerDashboardPage';
 import { CompanyProfilePage } from '../pages/employer/CompanyProfilePage';
 import { ManageJobsPage } from '../pages/employer/ManageJobsPage';
 import { PostJobPage } from '../pages/employer/PostJobPage';
-import { CandidateManagementPage } from '../pages/employer/CandidateManagementPage';
 import { HiringPipelinePage } from '../pages/employer/HiringPipelinePage';
 import { EmployerInterviewsPage } from '../pages/employer/EmployerInterviewsPage';
 import { OfferManagementPage } from '../pages/employer/OfferManagementPage';
@@ -35,6 +35,10 @@ import { TeamManagementPage } from '../pages/employer/TeamManagementPage';
 import { EmployerSettingsPage } from '../pages/employer/EmployerSettingsPage';
 import { EmployerNotificationsPage } from '../pages/employer/EmployerNotificationsPage';
 import { CompanyPage } from '../pages/employer/CompanyPage';
+import { HiringCampaignsPage } from '../pages/employer/HiringCampaignsPage';
+import { EmployerNewsPage } from '../pages/employer/EmployerNewsPage';
+import { EmployerProfilePage } from '../pages/employer/EmployerProfilePage';
+import { ApplicantsHubPage } from '../pages/employer/ApplicantsHubPage';
 
 // Admin Portal Pages
 import { AdminDashboardPage } from '../pages/admin/AdminDashboardPage';
@@ -86,6 +90,7 @@ export const AppRoutes: React.FC = () => {
         <Route path="/job/:id" element={<JobDetailsPage />} />
         <Route path="/companies" element={<CompanyPage />} />
         <Route path="/company/:id" element={<CompanyPage />} />
+        <Route path="/news" element={<NewsPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/faq" element={<FaqPage />} />
@@ -120,10 +125,17 @@ export const AppRoutes: React.FC = () => {
         <Route element={<EmployerLayout />}>
           <Route path="/dashboard" element={<EmployerDashboardPage />} />
           <Route path="/employer/dashboard" element={<EmployerDashboardPage />} />
+          <Route path="/employer/applicants" element={<ApplicantsHubPage defaultTab="applicants" />} />
+          <Route path="/employer/find-seekers" element={<ApplicantsHubPage defaultTab="find-seekers" />} />
+          <Route path="/employer/candidates" element={<ApplicantsHubPage defaultTab="database" />} />
+          <Route path="/employer/saved-candidates" element={<ApplicantsHubPage defaultTab="saved" />} />
+          <Route path="/employer/talent-sources" element={<ApplicantsHubPage defaultTab="sources" />} />
+          <Route path="/employer/campaigns" element={<HiringCampaignsPage />} />
+          <Route path="/employer/news" element={<EmployerNewsPage />} />
+          <Route path="/employer/profile" element={<EmployerProfilePage />} />
           <Route path="/employer/company" element={<CompanyProfilePage />} />
           <Route path="/my-jobs" element={<ManageJobsPage />} />
           <Route path="/post-job" element={<PostJobPage />} />
-          <Route path="/employer/candidates" element={<CandidateManagementPage />} />
           <Route path="/employer/pipeline" element={<HiringPipelinePage />} />
           <Route path="/employer/interviews" element={<EmployerInterviewsPage />} />
           <Route path="/employer/offers" element={<OfferManagementPage />} />

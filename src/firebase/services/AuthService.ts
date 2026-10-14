@@ -23,7 +23,7 @@ export interface IAuthService {
     password: string,
     role: FirestoreUserDocument['role'],
     name: string,
-    extraData?: { firstName?: string; lastName?: string }
+    extraData?: { firstName?: string; lastName?: string; employerPosition?: string }
   ): Promise<User>;
   signIn(email: string, password: string, rememberMe?: boolean): Promise<User>;
   signOut(): Promise<void>;
@@ -40,11 +40,41 @@ export class AuthService implements IAuthService {
     password: string,
     role: FirestoreUserDocument['role'],
     name: string,
-    extraData?: { firstName?: string; lastName?: string }
+    extraData?: { firstName?: string; lastName?: string; employerPosition?: string }
   ): Promise<User> {
     try {
+      // Enforce that user registration strictly accepts only canonical roles (no admin or super_admin escalation)
+      const normalizedRole: 'job_seeker' | 'employer' = role === 'employer' ? 'employer' : 'job_seeker';
+
+      // CRITICAL: Cache target role before creating Firebase Auth user,
+      // so onAuthStateChanged listener in AuthContext receives the correct role immediately.
+      localStorage.setItem('careerconnect_role', normalizedRole);
+
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+
+      const firstName = extraData?.firstName || name.split(' ')[0] || '';
+      const lastName = extraData?.lastName || name.split(' ').slice(1).join(' ') || '';
+      const employerPosition = extraData?.employerPosition || undefined;
+
+      const userCreatePayload: Omit<FirestoreUserDocument, 'createdAt' | 'updatedAt'> = {
+        uid: user.uid,
+        email: user.email || email,
+        role: normalizedRole,
+        displayName: name,
+        firstName,
+        lastName,
+        emailVerified: user.emailVerified,
+        profileCompleted: false,
+        accountStatus: 'active',
+        provider: 'password',
+        ...(employerPosition ? { employerPosition } : {}),
+        headline: '',
+        ...(user.photoURL ? { photoURL: user.photoURL } : {}),
+      };
+
+      // CRITICAL: Create user document immediately before slower secondary calls
+      await userRepository.create(userCreatePayload);
 
       if (name) {
         try {
@@ -59,23 +89,6 @@ export class AuthService implements IAuthService {
       } catch (e) {
         console.warn('sendEmailVerification warning:', e);
       }
-
-      const firstName = extraData?.firstName || name.split(' ')[0] || '';
-      const lastName = extraData?.lastName || name.split(' ').slice(1).join(' ') || '';
-
-      await userRepository.create({
-        uid: user.uid,
-        email: user.email || email,
-        role: role === 'candidate' ? 'job_seeker' : role,
-        displayName: name,
-        firstName,
-        lastName,
-        emailVerified: user.emailVerified,
-        profileCompleted: false,
-        accountStatus: 'active',
-        photoURL: user.photoURL || undefined,
-        provider: 'password',
-      });
 
       return user;
     } catch (err) {
@@ -92,10 +105,14 @@ export class AuthService implements IAuthService {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      await userRepository.update(user.uid, {
-        lastLogin: new Date().toISOString(),
-        emailVerified: user.emailVerified,
-      });
+      try {
+        await userRepository.update(user.uid, {
+          lastLogin: new Date().toISOString(),
+          emailVerified: user.emailVerified,
+        });
+      } catch (e) {
+        console.warn('signIn lastLogin update notice:', e);
+      }
 
       return user;
     } catch (err) {

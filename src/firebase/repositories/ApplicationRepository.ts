@@ -9,8 +9,9 @@ import {
   where,
   limit,
 } from 'firebase/firestore';
-import { db } from '../config/firestore';
+import { db, isFirebaseConfigured } from '../config/firestore';
 import { FirestoreApplicationDocument } from '../types';
+import { sanitizeFirestoreData } from '../utils/sanitize';
 
 export interface IApplicationRepository {
   findById(id: string): Promise<FirestoreApplicationDocument | null>;
@@ -26,6 +27,7 @@ export class ApplicationRepository implements IApplicationRepository {
   private collectionName = 'applications';
 
   async findById(id: string): Promise<FirestoreApplicationDocument | null> {
+    if (!isFirebaseConfigured) return null;
     try {
       const docRef = doc(db, this.collectionName, id);
       const snap = await getDoc(docRef);
@@ -49,26 +51,35 @@ export class ApplicationRepository implements IApplicationRepository {
       updatedAt: now,
     };
 
+    if (!isFirebaseConfigured) return newApp;
+
     try {
       const docRef = doc(db, this.collectionName, id);
-      await setDoc(docRef, newApp);
+      const cleanApp = sanitizeFirestoreData(newApp);
+      await setDoc(docRef, cleanApp);
+      const persisted = await getDoc(docRef);
+      if (!persisted.exists()) throw new Error('Application was not readable after persistence.');
+      return { id: persisted.id, ...persisted.data() } as FirestoreApplicationDocument;
     } catch (err) {
       console.warn('ApplicationRepository.create warning:', err);
+      throw err;
     }
-    return newApp;
   }
 
   async updateStatus(id: string, status: FirestoreApplicationDocument['status']): Promise<void> {
+    if (!isFirebaseConfigured) return;
     const now = new Date().toISOString();
     try {
       const docRef = doc(db, this.collectionName, id);
       await updateDoc(docRef, { status, updatedAt: now });
     } catch (err) {
       console.warn('ApplicationRepository.updateStatus warning:', err);
+      throw err;
     }
   }
 
   async findByCandidateId(candidateId: string): Promise<FirestoreApplicationDocument[]> {
+    if (!isFirebaseConfigured) return [];
     try {
       const colRef = collection(db, this.collectionName);
       const q = query(colRef, where('candidateId', '==', candidateId));
@@ -81,6 +92,7 @@ export class ApplicationRepository implements IApplicationRepository {
   }
 
   async findByJobId(jobId: string): Promise<FirestoreApplicationDocument[]> {
+    if (!isFirebaseConfigured) return [];
     try {
       const colRef = collection(db, this.collectionName);
       const q = query(colRef, where('jobId', '==', jobId));
@@ -93,6 +105,7 @@ export class ApplicationRepository implements IApplicationRepository {
   }
 
   async findByEmployerId(employerId: string): Promise<FirestoreApplicationDocument[]> {
+    if (!isFirebaseConfigured) return [];
     try {
       const colRef = collection(db, this.collectionName);
       const q = query(colRef, where('employerId', '==', employerId));
@@ -105,6 +118,7 @@ export class ApplicationRepository implements IApplicationRepository {
   }
 
   async listAll(limitCount: number = 100): Promise<FirestoreApplicationDocument[]> {
+    if (!isFirebaseConfigured) return [];
     try {
       const colRef = collection(db, this.collectionName);
       const q = query(colRef, limit(limitCount));

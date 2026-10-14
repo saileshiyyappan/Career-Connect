@@ -2,6 +2,7 @@ export * from './config/firebaseApp';
 export * from './config/auth';
 export * from './config/firestore';
 export * from './config/storage';
+export * from './config/functions';
 export * from './config/firebaseConfig';
 
 export * from './types';
@@ -17,6 +18,8 @@ export * from './repositories/InterviewRepository';
 export * from './repositories/NotificationRepository';
 export * from './repositories/AnnouncementRepository';
 export * from './repositories/AuditRepository';
+export * from './repositories/EmployerSavedCandidateRepository';
+export * from './repositories/HiringCampaignRepository';
 
 export * from './services/AuthService';
 export * from './services/UserService';

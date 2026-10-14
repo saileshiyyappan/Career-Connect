@@ -7,12 +7,12 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setThemeState] = useState<ThemeMode>(() => {
     const saved = localStorage.getItem('careerconnect_theme');
-    return (saved as ThemeMode) || 'system';
+    return (saved as ThemeMode) || 'light';
   });
 
   const [accent, setAccentState] = useState<AccentColor>(() => {
     const saved = localStorage.getItem('careerconnect_accent');
-    return (saved as AccentColor) || 'blue';
+    return (saved as AccentColor) || 'rose';
   });
 
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');

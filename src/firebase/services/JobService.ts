@@ -1,9 +1,10 @@
-import { FirestoreJobDocument } from '../types';
+import { FirestoreJobDocument, FirestoreExternalJobDocument } from '../types';
 import { jobRepository } from '../repositories/JobRepository';
+import { externalJobRepository } from '../repositories/ExternalJobRepository';
 import { savedJobRepository } from '../repositories/SavedJobRepository';
 
 export interface IJobService {
-  getJobDetails(jobId: string): Promise<FirestoreJobDocument | null>;
+  getJobDetails(jobId: string): Promise<FirestoreJobDocument | FirestoreExternalJobDocument | null>;
   createJobPosting(
     job: Omit<FirestoreJobDocument, 'id' | 'createdAt' | 'updatedAt' | 'viewsCount' | 'applicationsCount'>
   ): Promise<FirestoreJobDocument>;
@@ -15,6 +16,7 @@ export interface IJobService {
     type?: string;
     experienceLevel?: string;
   }): Promise<FirestoreJobDocument[]>;
+  listExternalJobs(limitCount?: number): Promise<FirestoreExternalJobDocument[]>;
   incrementViewCount(jobId: string): Promise<void>;
   getJobsByEmployer(employerId: string): Promise<FirestoreJobDocument[]>;
   toggleSaveJob(userId: string, jobId: string): Promise<boolean>;
@@ -22,8 +24,10 @@ export interface IJobService {
 }
 
 export class JobService implements IJobService {
-  async getJobDetails(jobId: string): Promise<FirestoreJobDocument | null> {
-    return jobRepository.findById(jobId);
+  async getJobDetails(jobId: string): Promise<FirestoreJobDocument | FirestoreExternalJobDocument | null> {
+    const internalJob = await jobRepository.findById(jobId);
+    if (internalJob) return internalJob;
+    return externalJobRepository.findById(jobId);
   }
 
   async createJobPosting(
@@ -52,6 +56,10 @@ export class JobService implements IJobService {
     experienceLevel?: string;
   }): Promise<FirestoreJobDocument[]> {
     return jobRepository.searchJobs(params.keyword, params);
+  }
+
+  async listExternalJobs(limitCount: number = 50): Promise<FirestoreExternalJobDocument[]> {
+    return externalJobRepository.listActive(limitCount);
   }
 
   async incrementViewCount(jobId: string): Promise<void> {
@@ -83,3 +91,4 @@ export class JobService implements IJobService {
 }
 
 export const jobService = new JobService();
+
