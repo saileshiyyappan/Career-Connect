@@ -25,11 +25,7 @@ export class UserRepository implements IUserRepository {
       return null;
     } catch (err) {
       console.warn('Firestore UserRepository.findById warning:', err);
-<<<<<<< HEAD
       throw err;
-=======
-      return null;
->>>>>>> origin/main
     }
   }
 

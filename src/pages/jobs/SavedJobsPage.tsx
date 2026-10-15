@@ -10,22 +10,14 @@ import { Job } from '../../types';
 import { Bookmark, Search, ArrowUpDown, Zap, CheckSquare, Trash2 } from 'lucide-react';
 
 export const SavedJobsPage: React.FC = () => {
-<<<<<<< HEAD
   const { savedJobs, savedJobIds, toggleSaveJob } = useJobContext();
-=======
-  const { jobs, savedJobIds, toggleSaveJob } = useJobContext();
->>>>>>> origin/main
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'date' | 'salary' | 'title'>('date');
   const [selectedJobIdsForCompare, setSelectedJobIdsForCompare] = useState<string[]>([]);
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
   const [jobToApply, setJobToApply] = useState<Job | null>(null);
 
-<<<<<<< HEAD
   const bookmarkedJobs = savedJobs.filter(j => savedJobIds.includes(j.id));
-=======
-  const bookmarkedJobs = jobs.filter(j => savedJobIds.includes(j.id));
->>>>>>> origin/main
 
   // Filter & Sort
   const filteredJobs = bookmarkedJobs

@@ -35,10 +35,6 @@ import {
   UserCheck,
   Zap,
   Star,
-<<<<<<< HEAD
-=======
-  Quote,
->>>>>>> origin/main
   Clock,
   Send,
   Newspaper
@@ -93,7 +89,6 @@ const AuthenticatedHomePage: React.FC = () => {
   const featuredJobs = jobs.filter(j => j.featured).slice(0, 4);
 
   const categories = [
-<<<<<<< HEAD
     { title: 'Engineering & Code', icon: Code2, catKey: 'Engineering' },
     { title: 'AI & Machine Learning', icon: BrainCircuit, catKey: 'Data & AI' },
     { title: 'Design & Creative', icon: Palette, catKey: 'Design' },
@@ -102,42 +97,6 @@ const AuthenticatedHomePage: React.FC = () => {
     { title: 'Marketing & Sales', icon: TrendingUp, catKey: 'Marketing' },
   ];
   const availableCategories = categories.filter((category) => jobs.some((job) => job.category === category.catKey));
-=======
-    { title: 'Engineering & Code', count: '1,420+ Jobs', icon: Code2, catKey: 'Engineering' },
-    { title: 'AI & Machine Learning', count: '850+ Jobs', icon: BrainCircuit, catKey: 'Data & AI' },
-    { title: 'Design & Creative', count: '640+ Jobs', icon: Palette, catKey: 'Design' },
-    { title: 'Cloud & DevOps', count: '920+ Jobs', icon: Cloud, catKey: 'DevOps & Cloud' },
-    { title: 'Product & Project', count: '510+ Jobs', icon: BarChart3, catKey: 'Product' },
-    { title: 'Marketing & Sales', count: '380+ Jobs', icon: TrendingUp, catKey: 'Marketing' },
-  ];
-
-  const testimonials = [
-    {
-      quote: "CareerConnect streamlined my job search completely. Within two weeks of creating my profile, I landed a Senior Frontend Developer role at a top AI startup.",
-      name: "Sophia Chen",
-      role: "Senior Frontend Engineer",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200",
-      company: "Starlight AI",
-      rating: 5
-    },
-    {
-      quote: "As a hiring manager, finding qualified cloud engineers was a huge bottleneck. CareerConnect's recruiter pipeline helped us hire 4 devs in under a month.",
-      name: "Marcus Vance",
-      role: "Head of Talent Acquisition",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200",
-      company: "CloudScale Systems",
-      rating: 5
-    },
-    {
-      quote: "The upfront salary transparency and remote filter options saved me dozens of hours. I never had to guess compensation ranges during initial screening.",
-      name: "Elena Rostova",
-      role: "Lead UX Researcher",
-      avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=200",
-      company: "PixelCraft Studios",
-      rating: 5
-    }
-  ];
->>>>>>> origin/main
 
   return (
     <div className="space-y-16 pb-16">
@@ -155,11 +114,7 @@ const AuthenticatedHomePage: React.FC = () => {
           
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-800/80 border border-slate-700 text-xs font-semibold text-slate-300 backdrop-blur-md">
             <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-<<<<<<< HEAD
             <span>Verified Tech & Enterprise Opportunities</span>
-=======
-            <span>Over 12,500+ Verified Tech & Enterprise Jobs Available Today</span>
->>>>>>> origin/main
           </div>
 
           <h1 className="text-4xl sm:text-6xl xl:text-7xl font-black tracking-tight leading-[1.1]">
@@ -227,26 +182,16 @@ const AuthenticatedHomePage: React.FC = () => {
         {/* Career Statistics Strip */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 sm:p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm">
           <div className="text-center space-y-1">
-<<<<<<< HEAD
             <p className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white" style={{ color: accentConfig.primaryHex }}>Live</p>
             <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Job Listings</p>
-=======
-            <p className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white" style={{ color: accentConfig.primaryHex }}>12,500+</p>
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Active Job Listings</p>
->>>>>>> origin/main
           </div>
           <div className="text-center space-y-1">
             <p className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white">2,800+</p>
             <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Verified Companies</p>
           </div>
           <div className="text-center space-y-1">
-<<<<<<< HEAD
             <p className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white">Verified</p>
             <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Employer Profiles</p>
-=======
-            <p className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white">98.4%</p>
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Placement Rate</p>
->>>>>>> origin/main
           </div>
           <div className="text-center space-y-1">
             <p className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white">$145k</p>
@@ -341,11 +286,7 @@ const AuthenticatedHomePage: React.FC = () => {
           />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-<<<<<<< HEAD
             {availableCategories.map((cat, idx) => {
-=======
-            {categories.map((cat, idx) => {
->>>>>>> origin/main
               const Icon = cat.icon;
               return (
                 <button
@@ -363,11 +304,7 @@ const AuthenticatedHomePage: React.FC = () => {
                     <h3 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-blue-600 transition-colors">
                       {cat.title}
                     </h3>
-<<<<<<< HEAD
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Browse matching jobs</p>
-=======
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{cat.count}</p>
->>>>>>> origin/main
                   </div>
                 </button>
               );
@@ -479,11 +416,7 @@ const AuthenticatedHomePage: React.FC = () => {
               </div>
               <h4 className="font-bold text-slate-900 dark:text-white text-base">Global & Remote</h4>
               <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-<<<<<<< HEAD
                 Access remote work-from-anywhere positions across North America, Europe & Asia.
-=======
-                Access thousands of remote work-from-anywhere positions across North America, Europe & Asia.
->>>>>>> origin/main
               </p>
             </div>
 
@@ -499,12 +432,7 @@ const AuthenticatedHomePage: React.FC = () => {
           </div>
         </section>
 
-<<<<<<< HEAD
         {false && <section className="space-y-8">
-=======
-        {/* Testimonials */}
-        <section className="space-y-8">
->>>>>>> origin/main
           <SectionHeader
             title="Trusted by Candidates & Recruiters Worldwide"
             subtitle="Read how tech professionals and talent acquisition leads use CareerConnect daily."
@@ -512,11 +440,7 @@ const AuthenticatedHomePage: React.FC = () => {
           />
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-<<<<<<< HEAD
             {([] as any[]).map((t, idx) => (
-=======
-            {testimonials.map((t, idx) => (
->>>>>>> origin/main
               <div key={idx} className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4 flex flex-col justify-between">
                 <div className="space-y-3">
                   <div className="flex items-center gap-1 text-amber-400">
@@ -538,11 +462,7 @@ const AuthenticatedHomePage: React.FC = () => {
               </div>
             ))}
           </div>
-<<<<<<< HEAD
         </section>}
-=======
-        </section>
->>>>>>> origin/main
 
         {/* Call To Action Banner */}
         <section className="p-8 sm:p-12 rounded-3xl bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 border border-slate-800 text-white flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden">
@@ -552,11 +472,7 @@ const AuthenticatedHomePage: React.FC = () => {
               Ready to Accelerate Your Career or Build Your Engineering Team?
             </h2>
             <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
-<<<<<<< HEAD
               Join job seekers and hiring teams on CareerConnect. Free account setup for candidates.
-=======
-              Join thousands of job seekers and hiring teams on CareerConnect. Free account setup for candidates.
->>>>>>> origin/main
             </p>
           </div>
 
@@ -589,11 +505,7 @@ const AuthenticatedHomePage: React.FC = () => {
 export const HomePage: React.FC = () => {
   const { user, role, isLoading } = useAuth();
   const effectiveRole = user?.role || role;
-<<<<<<< HEAD
   const isEmployer = effectiveRole === 'employer';
-=======
-  const isEmployer = effectiveRole === 'employer' || user?.email?.toLowerCase() === 'jr.research25@gmail.com';
->>>>>>> origin/main
 
   if (isLoading) {
     return (

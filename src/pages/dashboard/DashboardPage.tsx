@@ -44,11 +44,7 @@ import { Link as RouterLink, useNavigate } from 'react-router-dom';
 
 export const DashboardPage: React.FC = () => {
   const { role, user } = useAuth();
-<<<<<<< HEAD
   const isEmp = user?.role === 'employer' || role === 'employer';
-=======
-  const isEmp = user?.role === 'employer' || role === 'employer' || user?.email?.toLowerCase() === 'jr.research25@gmail.com';
->>>>>>> origin/main
   const effectiveRole = isEmp ? 'employer' : (user?.role || role);
   const { jobs, applications, savedJobIds, userProfile, updateApplicationStatus, toggleSaveJob } = useJobContext();
   const navigate = useNavigate();

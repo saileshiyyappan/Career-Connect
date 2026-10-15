@@ -11,10 +11,7 @@ import { useJobContext } from '../../context/JobContext';
 import { useAuth } from '../../context/AuthContext';
 import { Link as RouterLink } from 'react-router-dom';
 import { Job } from '../../types';
-<<<<<<< HEAD
 import { JOB_CATEGORIES } from '../../utils/jobCategories';
-=======
->>>>>>> origin/main
 import { 
   Briefcase, 
   Sparkles, 
@@ -31,11 +28,7 @@ import {
 
 export const JobsPage: React.FC = () => {
   const { role, user } = useAuth();
-<<<<<<< HEAD
   const isEmp = user?.role === 'employer' || role === 'employer';
-=======
-  const isEmp = user?.role === 'employer' || role === 'employer' || user?.email?.toLowerCase() === 'jr.research25@gmail.com';
->>>>>>> origin/main
   const effectiveRole = isEmp ? 'employer' : (user?.role || role);
   const { 
     jobs, 
@@ -61,11 +54,7 @@ export const JobsPage: React.FC = () => {
   const [selectedExpLevel, setSelectedExpLevel] = useState<string>('All');
   const [remoteOnly, setRemoteOnly] = useState<boolean>(searchFilter.remoteOnly || false);
 
-<<<<<<< HEAD
   const categories = ['All', ...JOB_CATEGORIES];
-=======
-  const categories = ['All', 'Engineering', 'Data & AI', 'Design', 'DevOps & Cloud', 'Product', 'Marketing'];
->>>>>>> origin/main
   const employmentTypes = ['All', 'Full-time', 'Part-time', 'Contract', 'Internship'];
   const experienceLevels = ['All', 'Entry Level', 'Mid Level', 'Senior Level', 'Director / Lead'];
 

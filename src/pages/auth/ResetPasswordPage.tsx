@@ -37,14 +37,10 @@ export const ResetPasswordPage: React.FC = () => {
 
     try {
       const urlParams = new URLSearchParams(window.location.search);
-<<<<<<< HEAD
       const oobCode = urlParams.get('oobCode');
       if (!oobCode) {
         throw new Error('This password reset link is invalid or incomplete.');
       }
-=======
-      const oobCode = urlParams.get('oobCode') || 'reset-token-demo';
->>>>>>> origin/main
       await authService.confirmPasswordReset(oobCode, password);
       setIsLoading(false);
       setIsSuccess(true);

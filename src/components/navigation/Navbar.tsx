@@ -60,11 +60,7 @@ export const Navbar: React.FC = () => {
     }
   };
 
-<<<<<<< HEAD
   const isEmpAccount = user?.role === 'employer' || role === 'employer';
-=======
-  const isEmpAccount = user?.role === 'employer' || role === 'employer' || user?.email?.toLowerCase() === 'jr.research25@gmail.com';
->>>>>>> origin/main
   const effectiveRole: UserRole = isEmpAccount ? 'employer' : (user?.role || role);
 
   const getNavItems = () => {

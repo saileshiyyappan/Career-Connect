@@ -4,11 +4,7 @@ import { SectionHeader } from '../../components/common/SectionHeader';
 import { AuditLogCard } from '../../components/admin/AuditLogCard';
 import { SecondaryButton } from '../../components/common/SecondaryButton';
 import { adminPortalService, AuditLogItem } from '../../services/adminPortalService';
-<<<<<<< HEAD
 import { Shield, Search, Download, Filter, AlertTriangle } from 'lucide-react';
-=======
-import { Shield, Search, Download, Filter, CheckCircle2 } from 'lucide-react';
->>>>>>> origin/main
 
 export const AuditLogsPage: React.FC = () => {
   const [logs, setLogs] = useState<AuditLogItem[]>([]);
@@ -21,11 +17,7 @@ export const AuditLogsPage: React.FC = () => {
   }, []);
 
   const handleExport = () => {
-<<<<<<< HEAD
     setExportNotice('Audit export is unavailable until trusted audit storage and export are configured.');
-=======
-    setExportNotice('Audit log CSV export file downloaded.');
->>>>>>> origin/main
     setTimeout(() => setExportNotice(''), 3000);
   };
 
@@ -55,11 +47,7 @@ export const AuditLogsPage: React.FC = () => {
 
       {exportNotice && (
         <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs font-bold flex items-center gap-2">
-<<<<<<< HEAD
           <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-=======
-          <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
->>>>>>> origin/main
           {exportNotice}
         </div>
       )}

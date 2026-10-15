@@ -11,11 +11,7 @@ export interface JobCardProps {
   onApply?: (jobId: string) => void;
   onBookmark?: (jobId: string) => void;
   onClick?: (jobId: string) => void;
-<<<<<<< HEAD
   isSaved?: boolean;
-=======
-  isBookmarked?: boolean;
->>>>>>> origin/main
   className?: string;
 }
 
@@ -24,11 +20,7 @@ export const JobCard: React.FC<JobCardProps> = ({
   onApply,
   onBookmark,
   onClick,
-<<<<<<< HEAD
   isSaved: initialBookmarked = false,
-=======
-  isBookmarked: initialBookmarked = false,
->>>>>>> origin/main
   className,
 }) => {
   const [bookmarked, setBookmarked] = useState(initialBookmarked);

@@ -37,11 +37,7 @@ export class ApplicationRepository implements IApplicationRepository {
       return null;
     } catch (err) {
       console.warn('ApplicationRepository.findById warning:', err);
-<<<<<<< HEAD
       throw err;
-=======
-      return null;
->>>>>>> origin/main
     }
   }
 
@@ -91,11 +87,7 @@ export class ApplicationRepository implements IApplicationRepository {
       return snap.docs.map((d) => ({ id: d.id, ...d.data() } as FirestoreApplicationDocument));
     } catch (err) {
       console.warn('ApplicationRepository.findByCandidateId warning:', err);
-<<<<<<< HEAD
       throw err;
-=======
-      return [];
->>>>>>> origin/main
     }
   }
 
@@ -108,11 +100,7 @@ export class ApplicationRepository implements IApplicationRepository {
       return snap.docs.map((d) => ({ id: d.id, ...d.data() } as FirestoreApplicationDocument));
     } catch (err) {
       console.warn('ApplicationRepository.findByJobId warning:', err);
-<<<<<<< HEAD
       throw err;
-=======
-      return [];
->>>>>>> origin/main
     }
   }
 
@@ -125,11 +113,7 @@ export class ApplicationRepository implements IApplicationRepository {
       return snap.docs.map((d) => ({ id: d.id, ...d.data() } as FirestoreApplicationDocument));
     } catch (err) {
       console.warn('ApplicationRepository.findByEmployerId warning:', err);
-<<<<<<< HEAD
       throw err;
-=======
-      return [];
->>>>>>> origin/main
     }
   }
 

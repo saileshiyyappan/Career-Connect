@@ -32,10 +32,6 @@ service cloud.firestore {
     function isEmployer() {
       return isAuthenticated() && (
         request.auth.token.get('role', '') == 'employer' ||
-<<<<<<< HEAD
-=======
-        request.auth.token.get('email', '') == 'jr.research25@gmail.com' ||
->>>>>>> origin/main
         (userExists() && (
           getUserData().get('role', '') == 'employer' ||
           getUserData().get('role', '') == 'admin'
@@ -83,18 +79,10 @@ service cloud.firestore {
     // ========================================================================
     match /users/{userId} {
       // Authenticated users can view user profiles (needed for candidate/recruiter discovery)
-<<<<<<< HEAD
       allow get: if isUser(userId) || isEmployer() || isAdmin();
       allow list: if isAuthenticated() && (
         isAdmin() ||
         isEmployer()
-=======
-      allow get: if isAuthenticated();
-      allow list: if isAuthenticated() && (
-        isAdmin() ||
-        isEmployer() ||
-        (request.auth.token != null && request.auth.token.email == 'jr.research25@gmail.com')
->>>>>>> origin/main
       );
 
       // Users can only create their own profile matching auth.uid; cannot elevate to admin or super_admin
@@ -111,11 +99,6 @@ service cloud.firestore {
         fieldUnchanged('uid') &&
         (
           fieldUnchanged('role') ||
-<<<<<<< HEAD
-=======
-          (request.resource.data.role in ['job_seeker', 'candidate', 'employer']) ||
-          (request.auth.token != null && request.auth.token.email == 'jr.research25@gmail.com') ||
->>>>>>> origin/main
           isAdmin()
         ) &&
         fieldUnchanged('accountStatus') &&
@@ -206,13 +189,8 @@ service cloud.firestore {
       // Candidates can update application details/withdraw; Employers can advance stages
       allow update: if (
         isAuthenticated() && (
-<<<<<<< HEAD
           (resource.data.candidateId == request.auth.uid && request.resource.data.status == 'withdrawn' && fieldUnchanged('candidateId') && fieldUnchanged('jobId') && fieldUnchanged('employerId')) ||
           (resource.data.employerId == request.auth.uid && fieldUnchanged('candidateId') && fieldUnchanged('jobId') && fieldUnchanged('employerId') && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt'])) ||
-=======
-          (resource.data.candidateId == request.auth.uid && fieldUnchanged('candidateId') && fieldUnchanged('jobId') && fieldUnchanged('employerId') && fieldUnchanged('status')) ||
-          (resource.data.employerId == request.auth.uid && fieldUnchanged('candidateId') && fieldUnchanged('jobId') && fieldUnchanged('employerId')) ||
->>>>>>> origin/main
           isAdmin()
         )
       );
@@ -267,13 +245,9 @@ service cloud.firestore {
     // ========================================================================
     match /notifications/{notificationId} {
       allow get, list: if isAuthenticated() && (
-<<<<<<< HEAD
         resource.data.userId == request.auth.uid ||
         (resource.data.type == 'invitation' && resource.data.senderId == request.auth.uid && isEmployer()) ||
         isAdmin()
-=======
-        resource.data.userId == request.auth.uid || isAdmin()
->>>>>>> origin/main
       );
       // System & inter-user event triggers can dispatch notifications
       allow create: if isAuthenticated() && (
@@ -376,32 +350,17 @@ service cloud.firestore {
     match /employer_saved_candidates/{docId} {
       allow get, list: if isAuthenticated() && (
         resource.data.employerId == request.auth.uid ||
-<<<<<<< HEAD
         isAdmin()
       );
       allow create: if isEmployer() && (
-=======
-        (request.auth.token != null && request.auth.token.email == 'jr.research25@gmail.com') ||
-        isAdmin()
-      );
-      allow create: if (isEmployer() || (request.auth.token != null && request.auth.token.email == 'jr.research25@gmail.com')) && (
->>>>>>> origin/main
         request.resource.data.employerId == request.auth.uid || isAdmin()
       );
       allow update: if isAuthenticated() && (
         (resource.data.employerId == request.auth.uid && request.resource.data.employerId == request.auth.uid) ||
-<<<<<<< HEAD
-=======
-        (request.auth.token != null && request.auth.token.email == 'jr.research25@gmail.com') ||
->>>>>>> origin/main
         isAdmin()
       );
       allow delete: if isAuthenticated() && (
         resource.data.employerId == request.auth.uid ||
-<<<<<<< HEAD
-=======
-        (request.auth.token != null && request.auth.token.email == 'jr.research25@gmail.com') ||
->>>>>>> origin/main
         isAdmin()
       );
     }
@@ -413,32 +372,17 @@ service cloud.firestore {
       allow get, list: if resource.data.status == 'active' ||
                           (isAuthenticated() && (
                             resource.data.employerId == request.auth.uid ||
-<<<<<<< HEAD
                             isAdmin()
                           ));
       allow create: if isEmployer() && (
-=======
-                            (request.auth.token != null && request.auth.token.email == 'jr.research25@gmail.com') ||
-                            isAdmin()
-                          ));
-      allow create: if (isEmployer() || (request.auth.token != null && request.auth.token.email == 'jr.research25@gmail.com')) && (
->>>>>>> origin/main
         request.resource.data.employerId == request.auth.uid || isAdmin()
       );
       allow update: if isAuthenticated() && (
         (resource.data.employerId == request.auth.uid && fieldUnchanged('employerId')) ||
-<<<<<<< HEAD
-=======
-        (request.auth.token != null && request.auth.token.email == 'jr.research25@gmail.com') ||
->>>>>>> origin/main
         isAdmin()
       );
       allow delete: if isAuthenticated() && (
         resource.data.employerId == request.auth.uid ||
-<<<<<<< HEAD
-=======
-        (request.auth.token != null && request.auth.token.email == 'jr.research25@gmail.com') ||
->>>>>>> origin/main
         isAdmin()
       );
     }
@@ -483,13 +427,7 @@ service cloud.firestore {
     // ========================================================================
     match /audit_logs/{logId} {
       allow get, list: if isAdmin();
-<<<<<<< HEAD
       allow create: if false;
-=======
-      allow create: if isAuthenticated() && (
-        request.resource.data.actorId == request.auth.uid || isAdmin()
-      );
->>>>>>> origin/main
       allow update, delete: if false; // Strict audit trail immutability
     }
 

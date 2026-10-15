@@ -629,26 +629,9 @@ class AdminPortalService {
   }
 
   private async addAuditLog(action: string, target: string) {
-<<<<<<< HEAD
     // Firestore rules intentionally reject client-created audit records.
     // A trusted backend writer is required; do not simulate persistence here.
     console.warn('Audit event requires trusted backend logging; no client audit write was attempted.', { action, target });
-=======
-    if (!isFirebaseConfigured) return;
-    try {
-      const user = auth.currentUser;
-      await auditRepository.create({
-        actorId: user?.uid || 'admin',
-        actorEmail: user?.email || 'admin@careerconnect.io',
-        action,
-        targetType: target,
-        targetId: '',
-        metadata: { timestamp: new Date().toISOString() },
-      });
-    } catch (err) {
-      console.warn('AdminPortalService.addAuditLog error:', err);
-    }
->>>>>>> origin/main
   }
 }
 

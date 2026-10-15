@@ -2,11 +2,7 @@
 
 ## Intelligent Full-Stack Online Job Portal
 
-<<<<<<< HEAD
 CareerConnect is a full-stack online job portal prototype designed to connect **Job Seekers**, **Employers**, and **Platform Administrators** through a modern Firebase-based application.
-=======
-CareerConnect is a **production-ready full-stack online job portal** designed to connect **Job Seekers**, **Employers**, and **Platform Administrators** through a secure, modern, and cloud-based recruitment platform.
->>>>>>> origin/main
 
 The project provides a complete recruitment ecosystem including job discovery, application tracking, company management, interview scheduling, recruitment analytics, and administrative moderation.
 
@@ -25,11 +21,7 @@ The project provides a complete recruitment ecosystem including job discovery, a
 - 👥 Role-Based Access Control (RBAC)
 - 📊 Employer Recruitment Dashboard
 - 🛡️ Administrator Management Portal
-<<<<<<< HEAD
 - Vercel configuration is included; live deployment requires environment-specific verification.
-=======
-- 🚀 Deployed using Vercel
->>>>>>> origin/main
 
 ---
 
@@ -105,11 +97,7 @@ CareerConnect supports three independent user portals.
 ## Recruitment
 
 - Online Applications
-<<<<<<< HEAD
 - Resume references (live upload requires Firebase Storage configuration)
-=======
-- Resume Upload
->>>>>>> origin/main
 - Candidate Evaluation
 - Interview Scheduling
 - Offer Management
@@ -124,11 +112,7 @@ CareerConnect supports three independent user portals.
 - Role-Based Navigation
 - Dynamic Dashboards
 - Notifications
-<<<<<<< HEAD
 - Firestore-backed application data and security rules
-=======
-- Secure Cloud Storage
->>>>>>> origin/main
 
 ---
 
@@ -145,11 +129,7 @@ CareerConnect supports three independent user portals.
 
 - Firebase Authentication
 - Cloud Firestore
-<<<<<<< HEAD
 - Firebase Storage configuration (live upload still requires setup and rules)
-=======
-- Firebase Storage
->>>>>>> origin/main
 
 ## Deployment
 
@@ -205,11 +185,7 @@ CareerConnect implements multiple security layers including:
 - Session Persistence
 - Secure HTTPS Communication
 - Input Validation
-<<<<<<< HEAD
 - Audit log reads; trusted backend audit writing is not yet deployed
-=======
-- Audit Logging
->>>>>>> origin/main
 
 ---
 
@@ -305,8 +281,4 @@ This project was developed for **academic learning, software engineering practic
 
 **Tier-3 Full-Stack Software Engineering Project**
 
-<<<<<<< HEAD
 CareerConnect demonstrates a cloud-native recruitment platform architecture using frontend development, Firebase services, role-based authentication, and Firestore-backed workflows. Live integrations and deployment still require environment-specific verification.
-=======
-CareerConnect demonstrates the complete development lifecycle of a modern cloud-native recruitment platform by integrating frontend development, Firebase backend services, role-based authentication, cloud database architecture, secure deployment, and production-ready software engineering practices.
->>>>>>> origin/main

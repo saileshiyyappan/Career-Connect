@@ -5,16 +5,10 @@ import { SecondaryButton } from '../../components/common/SecondaryButton';
 import { AuthCard } from '../../components/auth/AuthCard';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { Mail, CheckCircle2, ArrowRight, RefreshCw, Sparkles } from 'lucide-react';
-<<<<<<< HEAD
 import { showErrorToast, showSuccessToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
 import { authService } from '../../services/authService';
 import { auth } from '../../firebase/config/auth';
-=======
-import { showSuccessToast } from '../../context/ToastContext';
-import { useAuth } from '../../context/AuthContext';
-import { authService } from '../../services/authService';
->>>>>>> origin/main
 
 export const EmailVerificationPage: React.FC = () => {
   const navigate = useNavigate();
@@ -31,7 +25,6 @@ export const EmailVerificationPage: React.FC = () => {
       showSuccessToast(`Verification link sent to ${email}`);
     } catch (err) {
       setIsResending(false);
-<<<<<<< HEAD
       showErrorToast('Unable to resend the verification email. Please try again.');
     }
   };
@@ -48,15 +41,6 @@ export const EmailVerificationPage: React.FC = () => {
     } catch {
       showErrorToast('Unable to check verification status. Please try again.');
     }
-=======
-      showSuccessToast(`Verification link sent to ${email}`);
-    }
-  };
-
-  const handleSimulateVerification = () => {
-    showSuccessToast('Email verified successfully!');
-    navigate('/verify-success');
->>>>>>> origin/main
   };
 
   return (
@@ -80,11 +64,7 @@ export const EmailVerificationPage: React.FC = () => {
 
           <div className="space-y-3 pt-2">
             <PrimaryButton
-<<<<<<< HEAD
               onClick={handleCheckVerification}
-=======
-              onClick={handleSimulateVerification}
->>>>>>> origin/main
               fullWidth
               size="lg"
               icon={CheckCircle2}

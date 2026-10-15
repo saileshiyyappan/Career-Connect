@@ -18,12 +18,8 @@ export const HiringPipelinePage: React.FC = () => {
   }, []);
 
   const handleUpdateStage = async (candidateId: string, newStage: EmployerCandidate['stage']) => {
-<<<<<<< HEAD
     const persisted = await employerPortalService.updateApplicationStage(candidateId, newStage);
     if (!persisted) return;
-=======
-    await employerPortalService.updateApplicationStage(candidateId, newStage);
->>>>>>> origin/main
     setCandidates(prev => prev.map(c => c.id === candidateId ? { ...c, stage: newStage } : c));
   };
 

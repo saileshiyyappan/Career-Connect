@@ -5,21 +5,12 @@ import { PrimaryButton } from '../../components/common/PrimaryButton';
 import { ResumeCard } from '../../components/cards/ResumeCard';
 import { EmptyState } from '../../components/common/EmptyState';
 import { candidatePortalService, CandidateResume } from '../../services/candidatePortalService';
-<<<<<<< HEAD
 import { FileText, UploadCloud, CheckCircle2, Star, Sparkles, FileCheck } from 'lucide-react';
-=======
-import { FileText, UploadCloud, CheckCircle2, Star, Sparkles, FileCheck, RefreshCw } from 'lucide-react';
->>>>>>> origin/main
 
 export const ResumePage: React.FC = () => {
   const [resumes, setResumes] = useState<CandidateResume[]>([]);
   const [loading, setLoading] = useState(true);
-<<<<<<< HEAD
   const [uploadMessage, setUploadMessage] = useState('');
-=======
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadSuccessMsg, setUploadSuccessMsg] = useState('');
->>>>>>> origin/main
 
   useEffect(() => {
     loadResumes();
@@ -32,32 +23,12 @@ export const ResumePage: React.FC = () => {
     setLoading(false);
   };
 
-<<<<<<< HEAD
   const handleUploadUnavailable = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
     setUploadMessage('Resume uploads are not available until Firebase Storage is configured. No file was uploaded.');
     e.target.value = '';
-=======
-  const handleSimulatedUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-
-    const file = files[0];
-    setIsUploading(true);
-
-    setTimeout(async () => {
-      const newRes = await candidatePortalService.uploadResume(
-        file.name,
-        `${(file.size / (1024 * 1024)).toFixed(1)} MB`
-      );
-      setIsUploading(false);
-      setUploadSuccessMsg(`Successfully uploaded and parsed "${file.name}"!`);
-      loadResumes();
-      setTimeout(() => setUploadSuccessMsg(''), 4000);
-    }, 1200);
->>>>>>> origin/main
   };
 
   const handleSetPrimary = async (id: string) => {
@@ -90,20 +61,12 @@ export const ResumePage: React.FC = () => {
       {/* Upload Drag & Drop Box */}
       <div className="p-8 rounded-3xl border-2 border-dashed border-blue-300 dark:border-blue-800 bg-blue-50/40 dark:bg-blue-950/20 text-center space-y-3 transition-colors hover:border-blue-500">
         <div className="w-14 h-14 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 font-extrabold flex items-center justify-center mx-auto">
-<<<<<<< HEAD
             <UploadCloud className="w-7 h-7" />
-=======
-          {isUploading ? <RefreshCw className="w-6 h-6 animate-spin" /> : <UploadCloud className="w-7 h-7" />}
->>>>>>> origin/main
         </div>
 
         <div>
           <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
-<<<<<<< HEAD
             Upload New Resume Version
-=======
-            {isUploading ? 'Parsing Resume & Extracting Skills...' : 'Upload New Resume Version'}
->>>>>>> origin/main
           </h3>
           <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto mt-1">
             Drag and drop your PDF or DOCX file here, or click to browse. Supported formats: .pdf, .docx (Max 10MB).
@@ -115,11 +78,7 @@ export const ResumePage: React.FC = () => {
             id="resume-file-input"
             type="file"
             accept=".pdf,.docx,.doc"
-<<<<<<< HEAD
             onChange={handleUploadUnavailable}
-=======
-            onChange={handleSimulatedUpload}
->>>>>>> origin/main
             className="hidden"
           />
           <label
@@ -131,17 +90,10 @@ export const ResumePage: React.FC = () => {
           </label>
         </div>
 
-<<<<<<< HEAD
         {uploadMessage && (
           <p className="text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center justify-center gap-1.5 pt-2 animate-fade-in">
             <CheckCircle2 className="w-4 h-4" />
             {uploadMessage}
-=======
-        {uploadSuccessMsg && (
-          <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1.5 pt-2 animate-fade-in">
-            <CheckCircle2 className="w-4 h-4" />
-            {uploadSuccessMsg}
->>>>>>> origin/main
           </p>
         )}
       </div>

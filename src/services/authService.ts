@@ -40,30 +40,8 @@ export const authService = {
       const fbUser = await firebaseAuthService.signIn(payload.email, payload.password, payload.rememberMe);
       const userDoc = await userRepository.findById(fbUser.uid);
 
-<<<<<<< HEAD
       let role: UserRole;
       if (userDoc?.role) {
-=======
-      // Determine the resolved role:
-      // When signing in through the Employer tab OR for jr.research25@gmail.com,
-      // completely shift to employer and persist to DB.
-      const isEmployerIntent = payload.selectedRole === 'employer' || payload.email.toLowerCase() === 'jr.research25@gmail.com';
-
-      let role: UserRole;
-      if (isEmployerIntent) {
-        role = 'employer';
-        // Persist the employer role into Firestore DB
-        try {
-          await userRepository.update(fbUser.uid, {
-            role: 'employer',
-            ...(userDoc?.employerPosition ? { employerPosition: userDoc.employerPosition } : {}),
-            headline: userDoc?.headline || '',
-          });
-        } catch (dbErr) {
-          console.warn('DB update to employer notice:', dbErr);
-        }
-      } else if (userDoc?.role) {
->>>>>>> origin/main
         role = userDoc.role === 'employer' ? 'employer' : userDoc.role === 'admin' ? 'admin' : 'job_seeker';
       } else {
         role = 'job_seeker';
@@ -176,14 +154,7 @@ export const authService = {
         message: `Password reset instructions have been sent to ${email}.`,
       };
     } catch (err) {
-<<<<<<< HEAD
       throw err;
-=======
-      return {
-        success: true,
-        message: `Password reset instructions sent to ${email}.`,
-      };
->>>>>>> origin/main
     }
   },
 
@@ -195,11 +166,7 @@ export const authService = {
       await firebaseAuthService.confirmPasswordReset(code, newPassword);
       return { success: true };
     } catch (err) {
-<<<<<<< HEAD
       throw err;
-=======
-      return { success: true };
->>>>>>> origin/main
     }
   },
 
@@ -211,11 +178,7 @@ export const authService = {
       await firebaseAuthService.sendEmailVerification();
       return { success: true };
     } catch (err) {
-<<<<<<< HEAD
       throw err;
-=======
-      return { success: true };
->>>>>>> origin/main
     }
   },
 

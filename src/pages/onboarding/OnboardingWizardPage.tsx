@@ -51,11 +51,7 @@ export const OnboardingWizardPage: React.FC = () => {
   const { role, user, updateUserProfile } = useAuth();
   const navigate = useNavigate();
 
-<<<<<<< HEAD
   const isEmp = user?.role === 'employer' || role === 'employer';
-=======
-  const isEmp = user?.role === 'employer' || role === 'employer' || user?.email?.toLowerCase() === 'jr.research25@gmail.com';
->>>>>>> origin/main
   const effectiveRole = isEmp ? 'employer' : (user?.role || role);
   const isEmployer = effectiveRole === 'employer';
   const steps = isEmployer ? EMPLOYER_STEPS : JOB_SEEKER_STEPS;

@@ -41,7 +41,6 @@
       ]
     },
     {
-<<<<<<< HEAD
       "collectionGroup": "notifications",
       "queryScope": "COLLECTION",
       "fields": [
@@ -50,8 +49,6 @@
       ]
     },
     {
-=======
->>>>>>> origin/main
       "collectionGroup": "interviews",
       "queryScope": "COLLECTION",
       "fields": [

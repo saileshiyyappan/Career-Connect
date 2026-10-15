@@ -1,10 +1,6 @@
 import React from 'react';
 import { Job } from '../../types';
-<<<<<<< HEAD
 import { X, Check, DollarSign, MapPin, Briefcase, Award, Zap } from 'lucide-react';
-=======
-import { X, Check, DollarSign, MapPin, Building2, Briefcase, Award, Zap, ExternalLink } from 'lucide-react';
->>>>>>> origin/main
 import { PrimaryButton } from '../common/PrimaryButton';
 import { Badge } from '../common/Badge';
 
@@ -21,7 +17,6 @@ export const JobComparisonModal: React.FC<JobComparisonModalProps> = ({
   onClose,
   onApply,
 }) => {
-<<<<<<< HEAD
   if (!isOpen) return null;
 
   const formatSalary = (job: Job) => {
@@ -39,9 +34,6 @@ export const JobComparisonModal: React.FC<JobComparisonModalProps> = ({
   };
 
   const comparableJobs = jobs.slice(0, 3);
-=======
-  if (!isOpen || jobs.length === 0) return null;
->>>>>>> origin/main
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
@@ -57,11 +49,7 @@ export const JobComparisonModal: React.FC<JobComparisonModalProps> = ({
               </h3>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-<<<<<<< HEAD
               Comparing {comparableJobs.length} bookmarked opportunities to help you decide where to apply first.
-=======
-              Comparing {jobs.length} bookmarked opportunities to help you decide where to apply first.
->>>>>>> origin/main
             </p>
           </div>
           <button
@@ -78,11 +66,7 @@ export const JobComparisonModal: React.FC<JobComparisonModalProps> = ({
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-800">
                 <th className="py-4 px-3 w-1/4 text-slate-400 uppercase font-bold text-[11px]">Feature</th>
-<<<<<<< HEAD
                 {comparableJobs.map((job) => (
-=======
-                {jobs.map((job) => (
->>>>>>> origin/main
                   <th key={job.id} className="py-4 px-4 w-1/3 min-w-[220px]">
                     <div className="space-y-2">
                       <div className="flex items-center gap-3">
@@ -124,15 +108,9 @@ export const JobComparisonModal: React.FC<JobComparisonModalProps> = ({
                   <DollarSign className="w-4 h-4 text-emerald-500" />
                   Salary Range
                 </td>
-<<<<<<< HEAD
                 {comparableJobs.map((job) => (
                   <td key={job.id} className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
                     {formatSalary(job)}
-=======
-                {jobs.map((job) => (
-                  <td key={job.id} className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
-                    {job.salaryRange || '$120,000 - $160,000 / yr'}
->>>>>>> origin/main
                   </td>
                 ))}
               </tr>
@@ -143,15 +121,9 @@ export const JobComparisonModal: React.FC<JobComparisonModalProps> = ({
                   <MapPin className="w-4 h-4 text-blue-500" />
                   Location & Work Mode
                 </td>
-<<<<<<< HEAD
                 {comparableJobs.map((job) => (
                   <td key={job.id} className="py-3.5 px-4 text-slate-700 dark:text-slate-300">
                     <p className="font-semibold">{formatLocation(job)}</p>
-=======
-                {jobs.map((job) => (
-                  <td key={job.id} className="py-3.5 px-4 text-slate-700 dark:text-slate-300">
-                    <p className="font-semibold">{job.location}</p>
->>>>>>> origin/main
                     <Badge variant={job.isRemote ? 'success' : 'default'} size="sm" className="mt-1">
                       {job.isRemote ? 'Remote Friendly' : 'On-Site / Hybrid'}
                     </Badge>
@@ -165,15 +137,9 @@ export const JobComparisonModal: React.FC<JobComparisonModalProps> = ({
                   <Briefcase className="w-4 h-4 text-purple-500" />
                   Experience & Role Level
                 </td>
-<<<<<<< HEAD
                 {comparableJobs.map((job) => (
                   <td key={job.id} className="py-3.5 px-4 text-slate-700 dark:text-slate-300 capitalize">
                     {job.experienceLevel || 'Not specified'} ({job.employmentType || 'Not specified'})
-=======
-                {jobs.map((job) => (
-                  <td key={job.id} className="py-3.5 px-4 text-slate-700 dark:text-slate-300 capitalize">
-                    {job.experienceLevel} Level ({job.type})
->>>>>>> origin/main
                   </td>
                 ))}
               </tr>
@@ -184,7 +150,6 @@ export const JobComparisonModal: React.FC<JobComparisonModalProps> = ({
                   <Award className="w-4 h-4 text-amber-500" />
                   Key Tech Stack
                 </td>
-<<<<<<< HEAD
                 {comparableJobs.map((job) => (
                   <td key={job.id} className="py-3.5 px-4">
                     <div className="flex flex-wrap gap-1.5">
@@ -193,16 +158,6 @@ export const JobComparisonModal: React.FC<JobComparisonModalProps> = ({
                           {skill}
                         </span>
                       )) : <span className="text-slate-500">Not specified</span>}
-=======
-                {jobs.map((job) => (
-                  <td key={job.id} className="py-3.5 px-4">
-                    <div className="flex flex-wrap gap-1.5">
-                      {job.skills.map((skill) => (
-                        <span key={skill} className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-semibold">
-                          {skill}
-                        </span>
-                      ))}
->>>>>>> origin/main
                     </div>
                   </td>
                 ))}
@@ -214,15 +169,9 @@ export const JobComparisonModal: React.FC<JobComparisonModalProps> = ({
                   <Check className="w-4 h-4 text-emerald-500" />
                   Included Perks
                 </td>
-<<<<<<< HEAD
                 {comparableJobs.map((job) => (
                   <td key={job.id} className="py-3.5 px-4 text-slate-600 dark:text-slate-400 text-[11px] leading-relaxed">
                     Not specified
-=======
-                {jobs.map((job) => (
-                  <td key={job.id} className="py-3.5 px-4 text-slate-600 dark:text-slate-400 text-[11px] leading-relaxed">
-                    Health, 401(k) Matching, Unlimited PTO, Learning Stipend, Equity Package
->>>>>>> origin/main
                   </td>
                 ))}
               </tr>

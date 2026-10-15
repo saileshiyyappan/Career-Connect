@@ -19,7 +19,6 @@ export class ValidationError extends AppError {
   }
 }
 
-<<<<<<< HEAD
 export class ApplicationError extends AppError {
   constructor(message: string, code: string, statusCode: number = 400) {
     super(message, code, statusCode);
@@ -27,8 +26,6 @@ export class ApplicationError extends AppError {
   }
 }
 
-=======
->>>>>>> origin/main
 export class FirebaseErrorMapper {
   static map(error: unknown): AppError {
     if (error && typeof error === 'object' && 'code' in error) {
@@ -45,15 +42,10 @@ export class FirebaseErrorMapper {
         case 'auth/weak-password':
           return new AppError('Password should be at least 6 characters.', 'AUTH_WEAK_PASSWORD', 400);
         case 'permission-denied':
-<<<<<<< HEAD
         case 'firestore/permission-denied':
           return new AppError('You do not have permission to perform this action.', 'PERMISSION_DENIED', 403);
         case 'not-found':
         case 'firestore/not-found':
-=======
-          return new AppError('You do not have permission to perform this action.', 'PERMISSION_DENIED', 403);
-        case 'not-found':
->>>>>>> origin/main
           return new AppError('Requested resource was not found.', 'NOT_FOUND', 404);
         default:
           return new AppError(fbMessage, fbCode, 500);
