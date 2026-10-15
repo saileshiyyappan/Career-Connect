@@ -38,7 +38,11 @@ export class JobRepository implements IJobRepository {
       return null;
     } catch (err) {
       console.warn('JobRepository.findById warning:', err);
+<<<<<<< HEAD
       throw err;
+=======
+      return null;
+>>>>>>> origin/main
     }
   }
 
@@ -126,7 +130,11 @@ export class JobRepository implements IJobRepository {
       return docs;
     } catch (err) {
       console.warn('JobRepository.searchJobs warning:', err);
+<<<<<<< HEAD
       throw err;
+=======
+      return [];
+>>>>>>> origin/main
     }
   }
 

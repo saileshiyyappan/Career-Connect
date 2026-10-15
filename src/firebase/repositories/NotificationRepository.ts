@@ -84,6 +84,7 @@ export class NotificationRepository implements INotificationRepository {
 
   async findActiveInvitation(recipientId: string, senderId: string, jobId?: string): Promise<FirestoreNotificationDocument | null> {
     if (!isFirebaseConfigured) return null;
+<<<<<<< HEAD
     // Query only invitations sent by the authenticated employer. This avoids
     // reading a deterministic document ID that does not exist yet, which is
     // denied by rules that authorize reads using the existing document's sender.
@@ -102,6 +103,15 @@ export class NotificationRepository implements INotificationRepository {
         (jobId ? item.jobId === jobId : !item.jobId)
       );
     return invitation || null;
+=======
+    const id = `invitation_${senderId}_${recipientId}_${jobId || 'general'}`;
+    const snap = await getDoc(doc(db, this.collectionName, id));
+    if (!snap.exists()) return null;
+    const invitation = { id: snap.id, ...snap.data() } as FirestoreNotificationDocument;
+    return invitation.type === 'invitation' && invitation.invitationStatus === 'pending' && invitation.userId === recipientId && invitation.senderId === senderId
+      ? invitation
+      : null;
+>>>>>>> origin/main
   }
 
   async updateInvitationStatus(id: string, status: 'accepted' | 'declined'): Promise<void> {

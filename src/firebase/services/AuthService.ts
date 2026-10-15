@@ -31,7 +31,11 @@ export interface IAuthService {
   confirmPasswordReset(code: string, newPassword: string): Promise<void>;
   sendEmailVerification(user?: User | null): Promise<void>;
   getCurrentUser(): User | null;
+<<<<<<< HEAD
   onAuthStateChanged(callback: (user: User | null) => void, onError?: (error: Error) => void): () => void;
+=======
+  onAuthStateChanged(callback: (user: User | null) => void): () => void;
+>>>>>>> origin/main
 }
 
 export class AuthService implements IAuthService {
@@ -159,8 +163,13 @@ export class AuthService implements IAuthService {
     return auth.currentUser;
   }
 
+<<<<<<< HEAD
   onAuthStateChanged(callback: (user: User | null) => void, onError?: (error: Error) => void): () => void {
     return firebaseOnAuthStateChanged(auth, callback, onError);
+=======
+  onAuthStateChanged(callback: (user: User | null) => void): () => void {
+    return firebaseOnAuthStateChanged(auth, callback);
+>>>>>>> origin/main
   }
 }
 

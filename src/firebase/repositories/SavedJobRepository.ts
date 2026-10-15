@@ -36,8 +36,12 @@ export class SavedJobRepository implements ISavedJobRepository {
       const docRef = doc(db, this.collectionName, id);
       await setDoc(docRef, docData);
     } catch (err) {
+<<<<<<< HEAD
       console.error('SavedJobRepository.saveJob failed:', err);
       throw err;
+=======
+      console.warn('SavedJobRepository.saveJob warning:', err);
+>>>>>>> origin/main
     }
     return docData;
   }
@@ -49,8 +53,12 @@ export class SavedJobRepository implements ISavedJobRepository {
       const docRef = doc(db, this.collectionName, id);
       await deleteDoc(docRef);
     } catch (err) {
+<<<<<<< HEAD
       console.error('SavedJobRepository.removeSavedJob failed:', err);
       throw err;
+=======
+      console.warn('SavedJobRepository.removeSavedJob warning:', err);
+>>>>>>> origin/main
     }
   }
 
@@ -62,8 +70,13 @@ export class SavedJobRepository implements ISavedJobRepository {
       const snap = await getDocs(q);
       return snap.docs.map((d) => d.data() as FirestoreSavedJobDocument);
     } catch (err) {
+<<<<<<< HEAD
       console.error('SavedJobRepository.getSavedJobsByUser failed:', err);
       throw err;
+=======
+      console.warn('SavedJobRepository.getSavedJobsByUser warning:', err);
+      return [];
+>>>>>>> origin/main
     }
   }
 

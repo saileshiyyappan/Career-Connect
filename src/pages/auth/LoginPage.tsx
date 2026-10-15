@@ -25,7 +25,11 @@ export const LoginPage: React.FC = () => {
 
   useEffect(() => {
     if (!isLoading && !authLoading && isAuthenticated && effectiveRole !== 'guest') {
+<<<<<<< HEAD
       const isEmp = effectiveRole === 'employer';
+=======
+      const isEmp = effectiveRole === 'employer' || user?.email?.toLowerCase() === 'jr.research25@gmail.com';
+>>>>>>> origin/main
       if (isEmp) {
         navigate('/employer/dashboard', { replace: true });
       } else if (effectiveRole === 'admin') {
@@ -61,7 +65,11 @@ export const LoginPage: React.FC = () => {
     setIsLoading(true);
 
     try {
+<<<<<<< HEAD
       const isEmp = selectedRole === 'employer';
+=======
+      const isEmp = selectedRole === 'employer' || email.trim().toLowerCase() === 'jr.research25@gmail.com';
+>>>>>>> origin/main
       const targetRole = isEmp ? 'employer' : selectedRole;
 
       // Proactively establish role intent

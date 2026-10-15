@@ -130,7 +130,11 @@ export const StartupLoadingScreen: React.FC<StartupLoadingScreenProps> = ({
                   <div className="absolute bottom-4 left-5 right-5 h-px bg-cyan-400/30" /><span className="absolute bottom-2 right-5 font-mono text-[8px] text-cyan-300/60">SCHEMATIC ACTIVE</span>
                 </div>
                 <div className="mt-4 grid grid-cols-3 gap-2">{[Wrench, Cog, Cpu].map((Icon, index) => <div key={index} className="flex h-14 items-center justify-center rounded-lg border border-white/10 bg-white/[0.03]"><Icon className={index === 1 ? 'h-7 w-7 text-rose-400' : 'h-6 w-6 text-slate-400'} strokeWidth={1.4} /></div>)}</div>
+<<<<<<< HEAD
                 <div className="absolute bottom-4 left-5 right-5 flex items-center gap-2 font-mono text-[9px] text-slate-500"><Activity className="h-3 w-3 text-rose-400" /> torque sensors nominal <span className="ml-auto text-emerald-400">ACTIVE</span></div>
+=======
+                <div className="absolute bottom-4 left-5 right-5 flex items-center gap-2 font-mono text-[9px] text-slate-500"><Activity className="h-3 w-3 text-rose-400" /> torque sensors nominal <span className="ml-auto text-emerald-400">98.4%</span></div>
+>>>>>>> origin/main
               </section>
 
               <section className="relative z-10 flex min-w-0 flex-col items-center justify-center">

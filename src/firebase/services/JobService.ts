@@ -21,17 +21,25 @@ export interface IJobService {
   getJobsByEmployer(employerId: string): Promise<FirestoreJobDocument[]>;
   toggleSaveJob(userId: string, jobId: string): Promise<boolean>;
   getSavedJobIds(userId: string): Promise<string[]>;
+<<<<<<< HEAD
   getSavedJobs(userId: string): Promise<Array<FirestoreJobDocument | FirestoreExternalJobDocument>>;
+=======
+>>>>>>> origin/main
 }
 
 export class JobService implements IJobService {
   async getJobDetails(jobId: string): Promise<FirestoreJobDocument | FirestoreExternalJobDocument | null> {
+<<<<<<< HEAD
     try {
       const internalJob = await jobRepository.findById(jobId);
       if (internalJob) return internalJob;
     } catch (err) {
       console.warn('Internal job lookup failed; trying external source:', err);
     }
+=======
+    const internalJob = await jobRepository.findById(jobId);
+    if (internalJob) return internalJob;
+>>>>>>> origin/main
     return externalJobRepository.findById(jobId);
   }
 
@@ -93,12 +101,15 @@ export class JobService implements IJobService {
   async getSavedJobIds(userId: string): Promise<string[]> {
     return savedJobRepository.getSavedJobIdsByUser(userId);
   }
+<<<<<<< HEAD
 
   async getSavedJobs(userId: string): Promise<Array<FirestoreJobDocument | FirestoreExternalJobDocument>> {
     const savedRecords = await savedJobRepository.getSavedJobsByUser(userId);
     const resolved = await Promise.all(savedRecords.map((record) => this.getJobDetails(record.jobId)));
     return resolved.filter((job): job is FirestoreJobDocument | FirestoreExternalJobDocument => job !== null);
   }
+=======
+>>>>>>> origin/main
 }
 
 export const jobService = new JobService();

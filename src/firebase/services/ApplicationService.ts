@@ -5,8 +5,11 @@ import { notificationRepository } from '../repositories/NotificationRepository';
 import { userRepository } from '../repositories/UserRepository';
 import { auth } from '../config/auth';
 import { isFirebaseConfigured } from '../config/firestore';
+<<<<<<< HEAD
 import { AppError, ApplicationError, FirebaseErrorMapper } from '../utils/errors';
 import { evaluateCandidateEligibility } from '../../services/candidateDiscoveryService';
+=======
+>>>>>>> origin/main
 
 export interface IApplicationService {
   submitApplication(
@@ -26,6 +29,7 @@ export class ApplicationService implements IApplicationService {
   async submitApplication(
     data: Omit<FirestoreApplicationDocument, 'id' | 'appliedAt' | 'updatedAt' | 'status'>
   ): Promise<FirestoreApplicationDocument> {
+<<<<<<< HEAD
     if (!isFirebaseConfigured) {
       throw new ApplicationError(
         'Application services are not configured. Please try again later.',
@@ -98,6 +102,33 @@ export class ApplicationService implements IApplicationService {
       const mapped = FirebaseErrorMapper.map(error);
       throw new ApplicationError(mapped.message, 'APPLICATION_PERSISTENCE_FAILED', mapped.statusCode);
     }
+=======
+    const currentUser = auth.currentUser;
+    if (isFirebaseConfigured && (!currentUser || currentUser.uid !== data.candidateId)) {
+      throw new Error('Only the authenticated candidate can submit this application.');
+    }
+    const job = await jobRepository.findById(data.jobId);
+    if (isFirebaseConfigured && (!job || !['published', 'active'].includes(job.status))) {
+      throw new Error('This is not a valid active internal job owned by the stated employer.');
+    }
+    const authoritativeEmployerId = job?.employerId || data.employerId;
+    if (isFirebaseConfigured && (!job?.employerId || job.employerId !== authoritativeEmployerId)) {
+      throw new Error('The job does not have a valid owning employer.');
+    }
+    const candidate = await userRepository.findById(data.candidateId);
+    if (isFirebaseConfigured && (!candidate || !['job_seeker', 'candidate'].includes(candidate.role) || candidate.accountStatus === 'suspended')) {
+      throw new Error('Only an active candidate profile can submit an application.');
+    }
+    const existingApplications = await applicationRepository.findByCandidateId(data.candidateId);
+    if (existingApplications.some((application) => application.jobId === data.jobId && application.status !== 'withdrawn')) {
+      throw new Error('You have already applied to this job.');
+    }
+    const app = await applicationRepository.create({
+      ...data,
+      employerId: authoritativeEmployerId,
+      status: 'submitted',
+    });
+>>>>>>> origin/main
 
     // Increment job application count
     try {
@@ -114,14 +145,22 @@ export class ApplicationService implements IApplicationService {
     // Notify Employer
     try {
       await notificationRepository.create({
+<<<<<<< HEAD
         userId: job.employerId,
+=======
+        userId: authoritativeEmployerId,
+>>>>>>> origin/main
         title: 'New Job Application',
         message: `${data.candidateName} applied for ${data.jobTitle}`,
         type: 'application',
         link: `/employer/applicants`,
         read: false,
           senderId: data.candidateId,
+<<<<<<< HEAD
           recipientId: job.employerId,
+=======
+          recipientId: authoritativeEmployerId,
+>>>>>>> origin/main
         applicationId: app.id,
           jobId: data.jobId,
       }, `application_${app.id}`);
@@ -148,6 +187,7 @@ export class ApplicationService implements IApplicationService {
     applicationId: string,
     status: FirestoreApplicationDocument['status']
   ): Promise<void> {
+<<<<<<< HEAD
     const app = await applicationRepository.findById(applicationId);
     if (!app) throw new AppError('Application not found.', 'APPLICATION_NOT_FOUND', 404);
 
@@ -160,10 +200,13 @@ export class ApplicationService implements IApplicationService {
       throw new AppError('Candidates can only withdraw their own applications.', 'INVALID_STATUS_TRANSITION', 403);
     }
 
+=======
+>>>>>>> origin/main
     await applicationRepository.updateStatus(applicationId, status);
 
     // Notify Candidate
     try {
+<<<<<<< HEAD
        const updatedApp = await applicationRepository.findById(applicationId);
        if (updatedApp) {
         await notificationRepository.create({
@@ -178,6 +221,22 @@ export class ApplicationService implements IApplicationService {
            applicationId: updatedApp.id,
            jobId: updatedApp.jobId,
          }, `application_status_${updatedApp.id}_${status}`);
+=======
+      const app = await applicationRepository.findById(applicationId);
+      if (app) {
+        await notificationRepository.create({
+          userId: app.candidateId,
+          title: 'Application Status Update',
+          message: `Your application for ${app.jobTitle} at ${app.companyName} was updated to ${status.replace('_', ' ').toUpperCase()}`,
+          type: 'application',
+          link: '/applications',
+          read: false,
+          senderId: app.employerId,
+          recipientId: app.candidateId,
+          applicationId: app.id,
+          jobId: app.jobId,
+        }, `application_status_${app.id}_${status}`);
+>>>>>>> origin/main
       }
     } catch (err) {
       console.warn('Failed to notify candidate on status update:', err);

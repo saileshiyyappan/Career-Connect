@@ -9,8 +9,11 @@ import { companySearchGatewayService, GatewayCompany } from '../services/company
 import { companyRepository } from '../firebase/repositories/CompanyRepository';
 import { useAuth } from './AuthContext';
 import { resolveCandidateName } from '../services/candidateDiscoveryService';
+<<<<<<< HEAD
 import { FirestoreJobDocument, FirestoreExternalJobDocument } from '../firebase/types';
 import { normalizeJobCategory } from '../utils/jobCategories';
+=======
+>>>>>>> origin/main
 
 interface SearchFilterState {
   query: string;
@@ -25,7 +28,10 @@ interface JobContextType {
   companies: Company[];
   applications: JobApplication[];
   savedJobIds: string[];
+<<<<<<< HEAD
   savedJobs: Job[];
+=======
+>>>>>>> origin/main
   userProfile: UserProfile;
   isLoading: boolean;
   isLoadingJobs: boolean;
@@ -61,7 +67,10 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [companies, setCompanies] = useState<Company[]>([]);
   const [applications, setApplications] = useState<JobApplication[]>([]);
   const [savedJobIds, setSavedJobIds] = useState<string[]>([]);
+<<<<<<< HEAD
   const [savedJobs, setSavedJobs] = useState<Job[]>([]);
+=======
+>>>>>>> origin/main
   const [isLoadingJobs, setIsLoadingJobs] = useState<boolean>(true);
   const [isLoadingCompanies, setIsLoadingCompanies] = useState<boolean>(true);
   const [isLoadingApplications, setIsLoadingApplications] = useState<boolean>(false);
@@ -141,7 +150,11 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           employerId: fj.employerId || '',
           applicantCount: fj.applicationsCount || 0,
           featured: false,
+<<<<<<< HEAD
           category: normalizeJobCategory(fj.department),
+=======
+          category: fj.department || 'Engineering',
+>>>>>>> origin/main
           jobOrigin: 'internal',
         };
       });
@@ -185,9 +198,13 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           employerId: '',
           applicantCount: 0,
           featured: false,
+<<<<<<< HEAD
           category: normalizeJobCategory(
             (ej as any).category || (ej as any).department || (ej as any).jobCategory || (ej as any).industry || `${ej.title} ${ej.description}`
           ),
+=======
+          category: 'Engineering',
+>>>>>>> origin/main
           jobOrigin: 'external',
           sourceId: ej.sourceId,
           sourceName: ej.sourceName,
@@ -337,7 +354,11 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               employerId: '',
               applicantCount: 0,
               featured: false,
+<<<<<<< HEAD
               category: normalizeJobCategory(gj.category),
+=======
+              category: gj.category || 'Engineering',
+>>>>>>> origin/main
               jobOrigin: 'external',
               sourceId: gj.sourceId,
               sourceName: gj.sourceName,
@@ -452,12 +473,16 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const fetchUserData = useCallback(async () => {
     if (!user?.uid) {
       setSavedJobIds([]);
+<<<<<<< HEAD
       setSavedJobs([]);
+=======
+>>>>>>> origin/main
       setApplications([]);
       setIsLoadingApplications(false);
       return;
     }
 
+<<<<<<< HEAD
     // Clear the previous account's private data before loading the new account.
     setSavedJobIds([]);
     setSavedJobs([]);
@@ -467,12 +492,19 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const [savedIds, persistedSavedJobs, userApps] = await Promise.all([
         jobService.getSavedJobIds(user.uid),
         jobService.getSavedJobs(user.uid),
+=======
+    setIsLoadingApplications(true);
+    try {
+      const [savedIds, userApps] = await Promise.all([
+        jobService.getSavedJobIds(user.uid),
+>>>>>>> origin/main
         user.role === 'employer'
           ? applicationService.getEmployerApplications(user.uid)
           : applicationService.getCandidateApplications(user.uid),
       ]);
 
       setSavedJobIds(savedIds);
+<<<<<<< HEAD
       const mappedSavedJobs: Job[] = persistedSavedJobs.map((job) => {
         const external = 'publishedAt' in job;
         return {
@@ -511,6 +543,8 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         };
       });
       setSavedJobs(mappedSavedJobs);
+=======
+>>>>>>> origin/main
 
       const mappedApps: JobApplication[] = userApps.map((fa) => {
         const appliedDateStr = typeof fa.appliedAt === 'string'
@@ -546,7 +580,10 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setApplications(mappedApps);
     } catch (err: any) {
       console.warn('Failed to load user applications/saved jobs:', err);
+<<<<<<< HEAD
       setSavedJobs([]);
+=======
+>>>>>>> origin/main
     } finally {
       setIsLoadingApplications(false);
     }
@@ -654,6 +691,7 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return true;
       } catch (err: any) {
         console.warn('Submit application to Firestore failed:', err);
+<<<<<<< HEAD
         const messages: Record<string, string> = {
           UNAUTHENTICATED: 'Please sign in again before applying.',
           CANDIDATE_PROFILE_NOT_FOUND: 'Complete your candidate profile before applying.',
@@ -668,6 +706,10 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           APPLICATION_PERSISTENCE_FAILED: 'The application could not be saved. Please try again.',
         };
         showErrorToast(messages[err?.code] || 'Failed to submit application. Please try again.');
+=======
+        const code = err?.code ? ` (${err.code})` : '';
+        showErrorToast(`Failed to submit application${code}. Please try again.`);
+>>>>>>> origin/main
         return false;
       }
     },
@@ -682,20 +724,29 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
       const userId = user.uid;
 
+<<<<<<< HEAD
       const wasSaved = savedJobIds.includes(jobId);
       setSavedJobIds((prev) => {
+=======
+      let wasSaved = false;
+      setSavedJobIds((prev) => {
+        wasSaved = prev.includes(jobId);
+>>>>>>> origin/main
         if (wasSaved) {
           return prev.filter((id) => id !== jobId);
         } else {
           return [...prev, jobId];
         }
       });
+<<<<<<< HEAD
       if (wasSaved) {
         setSavedJobs((prev) => prev.filter((job) => job.id !== jobId));
       } else {
         const job = jobs.find((item) => item.id === jobId);
         if (job) setSavedJobs((prev) => prev.some((item) => item.id === jobId) ? prev : [...prev, job]);
       }
+=======
+>>>>>>> origin/main
 
       if (wasSaved) {
         showInfoToast('Removed job from saved bookmarks.');
@@ -707,6 +758,7 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         await jobService.toggleSaveJob(userId, jobId);
       } catch (err) {
         console.warn('Toggle save job failed:', err);
+<<<<<<< HEAD
         setSavedJobIds((prev) => wasSaved ? [...prev, jobId] : prev.filter((id) => id !== jobId));
         if (wasSaved) {
           const job = jobs.find((item) => item.id === jobId);
@@ -718,6 +770,11 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     },
     [user?.uid, savedJobIds, jobs]
+=======
+      }
+    },
+    [user?.uid]
+>>>>>>> origin/main
   );
 
   const postJob = useCallback(
@@ -882,7 +939,10 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       companies,
       applications,
       savedJobIds,
+<<<<<<< HEAD
       savedJobs,
+=======
+>>>>>>> origin/main
       userProfile,
       isLoading,
       isLoadingJobs,
@@ -914,7 +974,10 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       companies,
       applications,
       savedJobIds,
+<<<<<<< HEAD
       savedJobs,
+=======
+>>>>>>> origin/main
       userProfile,
       isLoading,
       isLoadingJobs,

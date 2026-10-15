@@ -89,6 +89,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [role, setRole] = useState<UserRole>('guest');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const creationAttemptedRef = useRef<Set<string>>(new Set());
+<<<<<<< HEAD
+=======
+  const roleSyncAttemptedRef = useRef<Set<string>>(new Set());
+>>>>>>> origin/main
 
   useEffect(() => {
     let unsubDoc: (() => void) | null = null;
@@ -111,11 +115,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(true);
       // Clean previous user state if switching accounts to prevent role leaks
       setUser((prev) => (prev?.uid === fbUser.uid ? prev : null));
+<<<<<<< HEAD
       setRole('guest');
 
       if (!isFirebaseConfigured) {
         // Cached role data is presentation-only and cannot authorize a session.
         const initialRole: UserRole = 'job_seeker';
+=======
+
+      if (!isFirebaseConfigured) {
+        const savedRole = localStorage.getItem('careerconnect_role') as UserRole | null;
+        const initialRole: UserRole = normalizeUserRole(savedRole);
+>>>>>>> origin/main
         const name = fbUser.displayName || '';
         const fallbackProfile: UserProfile = {
           uid: fbUser.uid,
@@ -145,6 +156,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const canonicalRole = normalizeUserRole(data.role);
             let resolvedRole: UserRole = canonicalRole;
 
+<<<<<<< HEAD
+=======
+            // jr.research25@gmail.com is an Employer account. Preserve that role.
+            if (fbUser.email?.toLowerCase() === 'jr.research25@gmail.com') {
+              resolvedRole = 'employer';
+              if (data.role !== 'employer' && !roleSyncAttemptedRef.current.has(fbUser.uid)) {
+                roleSyncAttemptedRef.current.add(fbUser.uid);
+                try {
+                  await userRepository.update(fbUser.uid, {
+                    role: 'employer',
+                    ...(data.employerPosition ? { employerPosition: data.employerPosition } : {}),
+                    headline: data.headline || '',
+                  });
+                } catch (e) {
+                  console.warn('Sync employer role to DB notice:', e);
+                }
+              }
+            }
+
+>>>>>>> origin/main
             const profile = buildUserProfileFromDoc(data, fbUser, resolvedRole);
 
             setUser(profile);
@@ -163,10 +194,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               creationAttemptedRef.current.add(fbUser.uid);
 
               const cachedRole = localStorage.getItem('careerconnect_role') as UserRole | null;
+<<<<<<< HEAD
               // A cached employer role is used only to complete the short registration
               // race before AuthService has finished creating the profile. Admin is never
               // accepted from client-side cached state.
               const registrationRole: UserRole = cachedRole === 'employer' ? 'employer' : 'job_seeker';
+=======
+              const isEmployerEmail = fbUser.email?.toLowerCase() === 'jr.research25@gmail.com';
+              const registrationRole: UserRole = (isEmployerEmail || cachedRole === 'employer') ? 'employer' : cachedRole === 'admin' ? 'admin' : 'job_seeker';
+>>>>>>> origin/main
               const employerPosition = undefined;
 
               const name = fbUser.displayName || '';
@@ -251,6 +287,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           });
         }
       );
+<<<<<<< HEAD
     }, (err) => {
       console.warn('Firebase authentication initialization failed:', err);
       if (unsubDoc) {
@@ -261,6 +298,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setRole('guest');
       setIsLoading(false);
       localStorage.setItem('careerconnect_role', 'guest');
+=======
+>>>>>>> origin/main
     });
 
     return () => {
@@ -322,11 +361,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const updateRole = async (newRole: UserRole) => {
+<<<<<<< HEAD
     if (role !== 'admin') {
       throw new Error('Role changes require an authorized administrative process.');
     }
     loginAs(newRole);
     if (user?.uid && newRole !== 'guest') {
+=======
+    loginAs(newRole);
+    if (user?.uid && newRole !== 'admin' && newRole !== 'guest') {
+>>>>>>> origin/main
       try {
         await userRepository.update(user.uid, {
           role: newRole,

@@ -6,7 +6,10 @@ import { RawNewsArticleInput } from '../src/types/news';
 
 export async function runLiveNewsSyncTests(): Promise<{ name: string; passed: boolean; error?: string }[]> {
   const results: { name: string; passed: boolean; error?: string }[] = [];
+<<<<<<< HEAD
   const runLiveFeeds = process.env.RUN_LIVE_FEED_TESTS === 'true';
+=======
+>>>>>>> origin/main
 
   for (const source of DEFAULT_NEWS_SOURCES) {
     try {
@@ -14,6 +17,7 @@ export async function runLiveNewsSyncTests(): Promise<{ name: string; passed: bo
       const timeout = setTimeout(() => controller.abort(), 12000);
 
       const requestUrl = new URL(source.feedUrl);
+<<<<<<< HEAD
       let body: string;
       if (!runLiveFeeds) {
         // Keep parser/normalizer tests deterministic. The production provider
@@ -59,6 +63,30 @@ export async function runLiveNewsSyncTests(): Promise<{ name: string; passed: bo
         }
         body = await response.text();
       }
+=======
+      if (source.id === 'newsapi') {
+        const config = getEnvironmentConfig();
+        if (!config.newsApiKey) throw new Error('NEWS_API_KEY is not configured');
+        requestUrl.searchParams.set('country', 'us');
+        requestUrl.searchParams.set('pageSize', '1');
+        requestUrl.searchParams.set('apiKey', config.newsApiKey);
+      }
+
+      const response = await fetch(requestUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) CareerConnect-News-Aggregator/2.0',
+          'Accept': 'application/rss+xml, application/atom+xml, application/xml, text/xml, */*',
+        },
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+
+      if (!response.ok) {
+        throw new Error(`HTTP status ${response.status}: ${response.statusText}`);
+      }
+
+      const body = await response.text();
+>>>>>>> origin/main
       let rawArticles: RawNewsArticleInput[];
       if (source.id === 'newsapi') {
         const payload = JSON.parse(body) as { status?: string; code?: string; message?: string; articles?: RawNewsArticleInput[] };
@@ -100,12 +128,20 @@ export async function runLiveNewsSyncTests(): Promise<{ name: string; passed: bo
       }
 
       results.push({
+<<<<<<< HEAD
         name: `${runLiveFeeds ? 'Live Feed' : 'Fixture'}: ${source.name} (${rawArticles.length} articles discovered, verified parsing & normalization)`,
+=======
+        name: `Live Feed: ${source.name} (${rawArticles.length} articles discovered, verified parsing & normalization)`,
+>>>>>>> origin/main
         passed: true,
       });
     } catch (err) {
       results.push({
+<<<<<<< HEAD
         name: `${runLiveFeeds ? 'Live Feed' : 'Fixture'}: ${source.name}`,
+=======
+        name: `Live Feed: ${source.name}`,
+>>>>>>> origin/main
         passed: false,
         error: err instanceof Error ? err.message : String(err),
       });

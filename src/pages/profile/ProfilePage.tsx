@@ -28,7 +28,11 @@ import {
 
 export const ProfilePage: React.FC = () => {
   const { role, user } = useAuth();
+<<<<<<< HEAD
   const isEmp = user?.role === 'employer' || role === 'employer';
+=======
+  const isEmp = user?.role === 'employer' || role === 'employer' || user?.email?.toLowerCase() === 'jr.research25@gmail.com';
+>>>>>>> origin/main
   const effectiveRole = isEmp ? 'employer' : (user?.role || role);
   const { userProfile, updateProfile } = useJobContext();
 

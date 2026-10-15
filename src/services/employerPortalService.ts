@@ -218,6 +218,7 @@ function mapStageToStatus(stage: EmployerCandidate['stage']): FirestoreApplicati
   }
 }
 
+<<<<<<< HEAD
 const STATUS_ORDER: FirestoreApplicationDocument['status'][] = [
   'submitted',
   'under_review',
@@ -236,6 +237,8 @@ function isAllowedEmployerTransition(
   return currentIndex >= 0 && nextIndex >= currentIndex;
 }
 
+=======
+>>>>>>> origin/main
 function formatRelativeTime(timestamp: string | number): string {
   if (!timestamp) return 'Recently';
   const date = typeof timestamp === 'number' ? new Date(timestamp) : new Date(timestamp);
@@ -439,7 +442,11 @@ export const employerPortalService = {
         }
       });
 
+<<<<<<< HEAD
       return applications.filter((app) => jobMap.has(app.jobId)).map((app) => {
+=======
+      return applications.map((app) => {
+>>>>>>> origin/main
         const job = jobMap.get(app.jobId);
         const stage = mapStatusToStage(app.status);
         const candidateUser = candidateMap.get(app.candidateId);
@@ -636,6 +643,7 @@ export const employerPortalService = {
     try {
       const currentUid = auth.currentUser?.uid;
       if (!currentUid) return false;
+<<<<<<< HEAD
       const employer = await userRepository.findById(currentUid);
       if (!employer || !['employer', 'admin'].includes(employer.role)) return false;
 
@@ -656,13 +664,32 @@ export const employerPortalService = {
             userId: persistedApp.candidateId,
             title: 'Application Stage Updated',
             message: `Your application for ${persistedApp.jobTitle} moved to ${newStage}.`,
+=======
+      const mappedStatus = mapStageToStatus(newStage);
+      await applicationRepository.updateStatus(candidateId, mappedStatus);
+
+      // Notify candidate with canonical route /applications
+      const app = await applicationRepository.findById(candidateId);
+      if (app && app.candidateId) {
+        try {
+          await notificationRepository.create({
+            userId: app.candidateId,
+            title: 'Application Stage Updated',
+            message: `Your application for ${app.jobTitle} moved to ${newStage}.`,
+>>>>>>> origin/main
             type: 'application',
             link: '/applications',
             read: false,
             senderId: currentUid,
+<<<<<<< HEAD
             recipientId: persistedApp.candidateId,
             applicationId: persistedApp.id,
             jobId: persistedApp.jobId,
+=======
+            recipientId: app.candidateId,
+            applicationId: app.id,
+            jobId: app.jobId,
+>>>>>>> origin/main
           });
         } catch (notificationError) {
           console.warn('Application status persisted but candidate notification failed:', notificationError);

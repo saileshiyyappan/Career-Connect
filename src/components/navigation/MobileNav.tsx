@@ -19,7 +19,11 @@ export interface MobileNavProps {
 
 export const MobileNav: React.FC<MobileNavProps> = ({ isOpen, onClose, navItems }) => {
   const { user, role, isAuthenticated, logout } = useAuth();
+<<<<<<< HEAD
   const isEmp = user?.role === 'employer' || role === 'employer';
+=======
+  const isEmp = user?.role === 'employer' || role === 'employer' || user?.email?.toLowerCase() === 'jr.research25@gmail.com';
+>>>>>>> origin/main
   const effectiveRole = isEmp ? 'employer' : (user?.role || role);
   const { accentConfig } = useTheme();
   const location = useLocation();

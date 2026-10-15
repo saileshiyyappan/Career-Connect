@@ -18,7 +18,12 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 }) => {
   const { role, user, isAuthenticated, isLoading } = useAuth();
   const effectiveRole = user?.role || role;
+<<<<<<< HEAD
   const activeRole: UserRole = effectiveRole;
+=======
+  const isEmpAccount = effectiveRole === 'employer' || user?.email?.toLowerCase() === 'jr.research25@gmail.com';
+  const activeRole: UserRole = isEmpAccount ? 'employer' : effectiveRole;
+>>>>>>> origin/main
 
   if (isLoading) {
     return (
