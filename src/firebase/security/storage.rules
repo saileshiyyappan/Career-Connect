@@ -1,0 +1,9 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Storage security rules placeholder - to be finalized in security hardening phase
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

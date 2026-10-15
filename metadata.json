@@ -1,0 +1,6 @@
+{
+  "name": "CareerConnect",
+  "description": "Connecting top tech and professional talent with world-class employers through real-time job matching, candidate tracking, and career growth tools.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
