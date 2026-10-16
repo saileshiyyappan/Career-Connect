@@ -32,10 +32,10 @@ export function sanitizeText(input: string | undefined | null): string {
 export function cleanCanonicalUrl(rawUrl: string | undefined | null): string {
   if (!rawUrl) return '';
   const trimmed = rawUrl.trim();
-  if (!trimmed.startsWith('http')) return trimmed;
 
   try {
     const parsed = new URL(trimmed);
+    if (!['http:', 'https:'].includes(parsed.protocol)) return '';
     const trackingParams = [
       'utm_source',
       'utm_medium',
@@ -203,7 +203,7 @@ export function normalizeExperienceLevel(raw: string | undefined | null): 'Entry
  * Parses and validates ISO 8601 date strings or epoch timestamps.
  */
 export function normalizeIsoDate(input: string | number | Date | undefined | null): string {
-  if (!input) return new Date().toISOString();
+  if (!input) return '';
   try {
     let timestamp: number | string | Date = input;
     if (typeof input === 'number') {
@@ -215,11 +215,11 @@ export function normalizeIsoDate(input: string | number | Date | undefined | nul
     }
     const d = new Date(timestamp);
     if (isNaN(d.getTime())) {
-      return new Date().toISOString();
+      return '';
     }
     return d.toISOString();
   } catch {
-    return new Date().toISOString();
+    return '';
   }
 }
 

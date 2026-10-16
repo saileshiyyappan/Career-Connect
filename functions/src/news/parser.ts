@@ -23,7 +23,9 @@ export class NewsParser {
     const title = sanitizeText(raw.title);
     if (!title || title.length < 3) return null;
 
-    const rawUrl = raw.link || raw.url || defaultSourceUrl || '';
+    // An item must carry its own canonical article URL. Falling back to the
+    // feed URL would create duplicate documents that do not open the article.
+    const rawUrl = raw.link || raw.url || '';
     const sourceUrl = cleanCanonicalUrl(rawUrl);
     if (!sourceUrl || !sourceUrl.startsWith('http')) return null;
 

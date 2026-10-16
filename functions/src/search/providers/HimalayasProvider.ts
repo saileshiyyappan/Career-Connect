@@ -30,7 +30,7 @@ export class HimalayasProvider extends BaseSearchProvider {
       const normalizedJobs: NormalizedExternalJob[] = [];
 
       for (const raw of rawJobs) {
-        if (!raw.title || !raw.applicationLink) continue;
+        if (!raw.title || !raw.applicationLink || !raw.companyName) continue;
 
         const pubDateIso = raw.pubDate
           ? (typeof raw.pubDate === 'number' ? new Date(raw.pubDate * 1000).toISOString() : new Date(raw.pubDate).toISOString())
@@ -50,10 +50,9 @@ export class HimalayasProvider extends BaseSearchProvider {
           sourceName: this.name,
           sourceUrl: raw.applicationLink,
           title: raw.title,
-          companyName: raw.companyName || 'Featured Organization',
+          companyName: raw.companyName,
           companySlug: raw.companySlug,
           companyLogoUrl: raw.companyLogo || undefined,
-          companyWebsite: raw.applicationLink,
           location: locationStr,
           isRemote,
           employmentType: SearchNormalizer.normalizeEmploymentType(raw.employmentType),
@@ -69,7 +68,7 @@ export class HimalayasProvider extends BaseSearchProvider {
           description: SearchNormalizer.stripHtml(raw.description),
           excerpt: raw.excerpt || undefined,
           skills: Array.isArray(raw.categories) ? raw.categories : [],
-          publishedAt: pubDateIso,
+          publishedAt: raw.pubDate ? pubDateIso : '',
           fetchedAt,
           applicationUrl: raw.applicationLink,
           jobOrigin: 'external',

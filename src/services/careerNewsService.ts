@@ -12,7 +12,6 @@ import {
 } from 'firebase/firestore';
 import { db, isFirebaseConfigured } from '../firebase/config/firestore';
 import { CareerNewsItem } from '../types/news';
-import { DEFAULT_CAREER_NEWS } from '../data/defaultCareerNews';
 import { isCareerRelevantNews } from '../utils/newsRelevance';
 
 const NEWS_COLLECTION = 'career_news';
@@ -35,43 +34,9 @@ export interface FetchNewsOptions {
 
 export class CareerNewsService {
   /**
-   * Filter in-memory fallback list by category, source, status, and sort
-   */
-  private getFallbackNews(options: FetchNewsOptions = {}): CareerNewsItem[] {
-    const { category, sourceId, sortBy = 'publishedAt', sortOrder = 'desc' } = options;
-    let list = [...DEFAULT_CAREER_NEWS];
-    list = list.filter(isCareerRelevantNews);
-
-    if (category && category !== 'all') {
-      const catLower = category.toLowerCase();
-      list = list.filter(
-        (item) =>
-          item.category?.toLowerCase() === catLower ||
-          item.tags?.some((t) => t.toLowerCase() === catLower)
-      );
-    }
-
-    if (sourceId && sourceId !== 'all') {
-      const srcLower = sourceId.toLowerCase();
-      list = list.filter(
-        (item) =>
-          item.sourceId?.toLowerCase() === srcLower ||
-          item.sourceName?.toLowerCase().includes(srcLower)
-      );
-    }
-
-    list.sort((a, b) => {
-      const timeA = new Date(a[sortBy] || a.publishedAt).getTime();
-      const timeB = new Date(b[sortBy] || b.publishedAt).getTime();
-      return sortOrder === 'desc' ? timeB - timeA : timeA - timeB;
-    });
-
-    return list;
-  }
-
-  /**
    * Fetches paginated career news articles sorted by date.
-   * If Firestore is empty or restricted by remote permissions, provides curated career news.
+   * If Firestore is unavailable or empty, returns an empty result. The client
+   * must never present bundled/demo articles as live news.
    */
   async getPaginatedNews(options: FetchNewsOptions = {}): Promise<PaginatedNewsResponse> {
     const {
@@ -84,13 +49,11 @@ export class CareerNewsService {
     } = options;
 
     if (!isFirebaseConfigured) {
-      const fallbackList = this.getFallbackNews(options);
-      const items = fallbackList.slice(0, limitCount);
       return {
-        items,
+        items: [],
         lastDoc: null,
-        hasMore: fallbackList.length > limitCount,
-        totalFetched: items.length,
+        hasMore: false,
+        totalFetched: 0,
       };
     }
 
@@ -158,14 +121,11 @@ export class CareerNewsService {
       console.warn('CareerNewsService.getPaginatedNews notice (using curated news feed):', error);
     }
 
-    // Curated fallback
-    const fallbackList = this.getFallbackNews(options);
-    const items = fallbackList.slice(0, limitCount);
     return {
-      items,
+      items: [],
       lastDoc: null,
-      hasMore: fallbackList.length > limitCount,
-      totalFetched: items.length,
+      hasMore: false,
+      totalFetched: 0,
     };
   }
 
@@ -174,7 +134,7 @@ export class CareerNewsService {
    */
   async getLatestNews(limitCount: number = 30): Promise<CareerNewsItem[]> {
     if (!isFirebaseConfigured) {
-      return this.getFallbackNews({ limitCount }).slice(0, limitCount);
+      return [];
     }
 
     try {
@@ -196,7 +156,7 @@ export class CareerNewsService {
       console.warn('CareerNewsService.getLatestNews notice (using curated news feed):', error);
     }
 
-    return this.getFallbackNews({ limitCount }).slice(0, limitCount);
+    return [];
   }
 
   /**
@@ -238,7 +198,7 @@ export class CareerNewsService {
       console.warn(`CareerNewsService.getNewsByCategory notice for '${category}':`, error);
     }
 
-    return this.getFallbackNews({ category, limitCount }).slice(0, limitCount);
+    return [];
   }
 
   /**
@@ -261,7 +221,7 @@ export class CareerNewsService {
       console.warn(`CareerNewsService.getNewsBySource notice for '${sourceId}':`, error);
     }
 
-    return this.getFallbackNews({ sourceId, limitCount }).slice(0, limitCount);
+    return [];
   }
 
   /**
@@ -284,7 +244,7 @@ export class CareerNewsService {
       console.warn('CareerNewsService.getRecentNews notice:', error);
     }
 
-    return this.getFallbackNews({ limitCount }).slice(0, limitCount);
+    return [];
   }
 
   /**
@@ -304,8 +264,7 @@ export class CareerNewsService {
       }
     }
 
-    const fallback = DEFAULT_CAREER_NEWS.find((item) => item.id === id);
-    return fallback || null;
+    return null;
   }
 
   /**
@@ -349,22 +308,7 @@ export class CareerNewsService {
       console.warn('CareerNewsService.searchNews notice:', error);
     }
 
-    // Search in fallback data
-    const terms = sanitizedQuery.split(/\s+/).filter(Boolean);
-    const fallbackBase = this.getFallbackNews({ category, limitCount: 60 });
-    return fallbackBase
-      .filter((item) => {
-        const titleMatch = item.title?.toLowerCase() || '';
-        const summaryMatch = item.summary?.toLowerCase() || '';
-        const sourceMatch = item.sourceName?.toLowerCase() || '';
-        const authorMatch = item.author?.toLowerCase() || '';
-        const tagsMatch = item.tags?.join(' ').toLowerCase() || '';
-        const categoryMatch = item.category?.toLowerCase() || '';
-
-        const fullText = `${titleMatch} ${summaryMatch} ${sourceMatch} ${authorMatch} ${tagsMatch} ${categoryMatch}`;
-        return terms.every((term) => fullText.includes(term));
-      })
-      .slice(0, limitCount);
+    return [];
   }
 }
 

@@ -64,7 +64,7 @@ async function startServer() {
       const result = await jobSearchService.searchJobs(queryParams);
       res.json(result);
     } catch (err) {
-      console.error('Job search gateway error:', err);
+      console.error('Job search gateway error:', err instanceof Error ? err.message : 'unknown error');
       res.status(500).json({
         success: false,
         data: [],
@@ -75,7 +75,7 @@ async function startServer() {
         cached: false,
         queryTimeMs: 0,
         providersQueried: [],
-        error: err instanceof Error ? err.message : 'Search is temporarily unavailable. Please try again.',
+        error: 'Search is temporarily unavailable. Please try again.',
       });
     }
   });

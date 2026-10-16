@@ -47,7 +47,7 @@ export class JobicyProvider extends BaseSearchProvider {
       for (const raw of rawJobs) {
         const title = raw.jobTitle || raw.title;
         const appUrl = raw.url || raw.jobExcerpt;
-        if (!title || !appUrl) continue;
+        if (!title || !appUrl || !raw.companyName) continue;
 
         const pubDateIso = raw.pubDate ? new Date(raw.pubDate).toISOString() : fetchedAt;
         const locationStr = raw.jobGeo || 'Remote';
@@ -63,9 +63,8 @@ export class JobicyProvider extends BaseSearchProvider {
           sourceName: this.name,
           sourceUrl: appUrl,
           title,
-          companyName: raw.companyName || 'Featured Organization',
+          companyName: raw.companyName,
           companyLogoUrl: raw.companyLogo || undefined,
-          companyWebsite: appUrl,
           location: locationStr,
           isRemote: true,
           employmentType: SearchNormalizer.normalizeEmploymentType(Array.isArray(raw.jobType) ? raw.jobType.join(', ') : raw.jobType),
@@ -79,7 +78,7 @@ export class JobicyProvider extends BaseSearchProvider {
           description: SearchNormalizer.stripHtml(raw.jobDescription || raw.jobExcerpt),
           excerpt: raw.jobExcerpt ? SearchNormalizer.stripHtml(raw.jobExcerpt) : undefined,
           skills: raw.jobTags || [],
-          publishedAt: pubDateIso,
+          publishedAt: raw.pubDate ? pubDateIso : '',
           fetchedAt,
           applicationUrl: appUrl,
           jobOrigin: 'external',
@@ -115,7 +114,6 @@ export class JobicyProvider extends BaseSearchProvider {
           name: job.companyName,
           logoUrl: job.companyLogoUrl,
           industry: job.category,
-          description: `Organization actively hiring for ${job.title} and related roles.`,
           headquarters: job.location,
           openJobsCount: 1,
           verified: false,

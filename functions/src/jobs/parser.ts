@@ -64,9 +64,9 @@ export class JobParser {
       companyLogo = raw.company.logo;
     }
 
-    if (!companyName) {
-      companyName = 'Confidential / Unspecified';
-    }
+    // Do not publish a fabricated employer name. Providers must supply a
+    // company value for an external listing to be shown.
+    if (!companyName) return null;
 
     if (!companyLogo && (raw.companyLogo || raw.company_logo)) {
       companyLogo = String(raw.companyLogo || raw.company_logo).trim();
@@ -107,9 +107,7 @@ export class JobParser {
       );
     }
 
-    if (!location) {
-      location = 'Remote / Worldwide';
-    }
+    if (!location) location = 'Not specified';
 
     // 6. Extract Description / Excerpt
     const description = sanitizeText(
@@ -117,10 +115,12 @@ export class JobParser {
     );
 
     // 7. Extract Remote Flag
-    let isRemote = true; // Default true for modern remote aggregators like Himalayas & Jobicy
+    let isRemote = false;
     if (typeof raw.remote === 'boolean') isRemote = raw.remote;
     else if (typeof raw.is_remote === 'boolean') isRemote = raw.is_remote;
     else if (typeof raw.remote === 'string') isRemote = raw.remote.toLowerCase() === 'true' || raw.remote.toLowerCase() === 'remote';
+    else if (typeof raw.is_remote === 'string') isRemote = raw.is_remote.toLowerCase() === 'true' || raw.is_remote.toLowerCase() === 'remote';
+    else isRemote = location.toLowerCase().includes('remote');
 
     // 8. Extract Employment Type
     let rawEmploymentType: string | undefined;

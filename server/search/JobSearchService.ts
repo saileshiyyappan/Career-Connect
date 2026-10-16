@@ -44,6 +44,7 @@ export class JobSearchService {
     // 2. Query Providers Concurrently with Fault-Tolerance
     const providerPromises = this.providers.map(async (provider) => {
       try {
+        const metricsBefore = provider.getMetrics();
         const jobs = await provider.searchJobs({
           query: normQuery,
           company: normCompany,
@@ -54,6 +55,14 @@ export class JobSearchService {
           page,
           limit: 50,
         });
+        const metricsAfter = provider.getMetrics();
+        if (metricsAfter.failedQueries > metricsBefore.failedQueries) {
+          return {
+            providerId: provider.id,
+            jobs: [],
+            error: 'Provider request failed',
+          };
+        }
         return { providerId: provider.id, jobs, error: null };
       } catch (err) {
         return {
@@ -66,6 +75,7 @@ export class JobSearchService {
 
     const providerResults = await Promise.all(providerPromises);
     const queriedProviderIds = providerResults.map((r) => r.providerId);
+    const failedProviderCount = providerResults.filter((result) => result.error).length;
 
     // 3. Aggregate & Normalize
     let rawAggregated: NormalizedExternalJob[] = [];
@@ -150,7 +160,7 @@ export class JobSearchService {
     const hasMore = startIndex + limit < total;
 
     const response: SearchGatewayResponse<NormalizedExternalJob> = {
-      success: true,
+      success: failedProviderCount < providerResults.length,
       data: paginatedData,
       total,
       page,
@@ -160,6 +170,9 @@ export class JobSearchService {
       queryTimeMs: Date.now() - startTime,
       providersQueried: queriedProviderIds,
       relatedQueryUsed,
+      ...(failedProviderCount === providerResults.length
+        ? { error: 'All external job providers are temporarily unavailable.' }
+        : {}),
     };
 
     // Cache the response

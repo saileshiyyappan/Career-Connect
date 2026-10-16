@@ -31,7 +31,7 @@ export class ArbeitnowProvider extends BaseSearchProvider {
       const normalizedJobs: NormalizedExternalJob[] = [];
 
       for (const raw of rawJobs) {
-        if (!raw.title || !raw.url) continue;
+        if (!raw.title || !raw.url || !raw.company_name) continue;
 
         const pubDateIso = raw.created_at
           ? (typeof raw.created_at === 'number' ? new Date(raw.created_at * 1000).toISOString() : new Date(raw.created_at).toISOString())
@@ -47,15 +47,14 @@ export class ArbeitnowProvider extends BaseSearchProvider {
           sourceName: this.name,
           sourceUrl: raw.url,
           title: raw.title,
-          companyName: raw.company_name || 'Featured Organization',
-          companyWebsite: raw.url,
+          companyName: raw.company_name,
           location: locationStr,
           isRemote: raw.remote === true || locationStr.toLowerCase().includes('remote'),
           employmentType: SearchNormalizer.normalizeEmploymentType(Array.isArray(raw.job_types) ? raw.job_types.join(', ') : raw.job_types),
           category,
           description: SearchNormalizer.stripHtml(raw.description),
           skills: raw.tags || [],
-          publishedAt: pubDateIso,
+          publishedAt: raw.created_at ? pubDateIso : '',
           fetchedAt,
           applicationUrl: raw.url,
           jobOrigin: 'external',
@@ -90,7 +89,6 @@ export class ArbeitnowProvider extends BaseSearchProvider {
           sourceUrl: job.applicationUrl,
           name: job.companyName,
           industry: job.category,
-          description: `Organization actively hiring for ${job.title} and European/Remote roles.`,
           headquarters: job.location,
           openJobsCount: 1,
           verified: false,

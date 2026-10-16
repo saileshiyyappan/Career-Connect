@@ -282,3 +282,21 @@ This project was developed for **academic learning, software engineering practic
 **Tier-3 Full-Stack Software Engineering Project**
 
 CareerConnect demonstrates a cloud-native recruitment platform architecture using frontend development, Firebase services, role-based authentication, and Firestore-backed workflows. Live integrations and deployment still require environment-specific verification.
+
+## Live News and Jobs Data Flow
+
+Career News is synchronized by the Firebase Functions `scheduledDailyNewsAggregation` function or the admin-only `triggerNewsSync` / `syncCareerNewsManual` callables. Normalized provider records are stored in the public-read `career_news` collection and loaded by the existing Career News page. The client does not substitute bundled demo articles when the collection is unavailable or empty.
+
+External jobs are available through the existing `GET /api/search/jobs` endpoint and the Firebase callable `searchJobsGateway`. Supported query parameters are `query`, `company`, `location`, `category`, `type`, `remoteOnly`, `page`, and `limit`. The response contains `success`, `data`, `total`, `page`, `limit`, `hasMore`, `cached`, `queryTimeMs`, and `providersQueried`. External records retain `jobOrigin: "external"` and their provider application URL; they are never sent through the internal Firestore application workflow.
+
+The Vercel deployment exposes the same jobs endpoint through `api/search/jobs.ts`. The Express server remains the local development/runtime gateway. Provider credentials stay server-side: `NEWS_API_KEY`, `NEWS_API_BASE_URL`, `JOB_APP_ID` or `JOB_API_ID`, `JOB_APP_KEY` or `JOB_API_KEY`, and `JOB_API_BASE_URL`. Firebase client settings remain the `VITE_FIREBASE_*` variables.
+
+Verification commands:
+
+```text
+npm run lint
+npm run build
+cd functions && npm run build && npm test
+```
+
+These checks use deterministic provider fixtures. Live provider verification requires the relevant credentials and network access and is not part of the default test run.

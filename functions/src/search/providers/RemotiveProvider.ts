@@ -34,7 +34,7 @@ export class RemotiveProvider extends BaseSearchProvider {
       const normalizedJobs: NormalizedExternalJob[] = [];
 
       for (const raw of rawJobs) {
-        if (!raw.title || !raw.url) continue;
+        if (!raw.title || !raw.url || !raw.company_name) continue;
 
         const pubDateIso = raw.publication_date ? new Date(raw.publication_date).toISOString() : fetchedAt;
         const locationStr = raw.candidate_required_location || 'Worldwide (Remote)';
@@ -47,9 +47,8 @@ export class RemotiveProvider extends BaseSearchProvider {
           sourceName: this.name,
           sourceUrl: raw.url,
           title: raw.title,
-          companyName: raw.company_name || 'Featured Organization',
+          companyName: raw.company_name,
           companyLogoUrl: raw.company_logo || undefined,
-          companyWebsite: raw.url,
           location: locationStr,
           isRemote: true,
           employmentType: SearchNormalizer.normalizeEmploymentType(raw.job_type),
@@ -57,7 +56,7 @@ export class RemotiveProvider extends BaseSearchProvider {
           salaryFormatted: raw.salary || undefined,
           description: SearchNormalizer.stripHtml(raw.description),
           skills: raw.tags || [],
-          publishedAt: pubDateIso,
+          publishedAt: raw.publication_date ? pubDateIso : '',
           fetchedAt,
           applicationUrl: raw.url,
           jobOrigin: 'external',
